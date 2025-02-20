@@ -8,17 +8,16 @@ class HealthIssue extends Model
 {
     use HasFactory;
 
+    protected $table = 'health_issues';
+
     protected $fillable = [
         'patient_id',
-        'symptoms',
-        'report_pdf',
-        'report_image',
-        'doctor_type',
         'diagnosis',
-        'solution',
-        'other_info'
+        'solution_description',
+        'symptom_description',
     ];
 
+ 
     public function patient()
     {
         return $this->belongsTo(Patient::class);

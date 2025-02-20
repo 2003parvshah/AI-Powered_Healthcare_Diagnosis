@@ -11,38 +11,55 @@ class Doctor extends Model
 
     protected $fillable = [
         'user_id',
-        'specialization',
+        'specialization_id',
+        'degree_id',
         'license_number',
-        'bio',
-        'medical_degrees',
-        'years_of_experience',
-        'board_certifications',
-        'university_attended',
-        'medical_council_registration',
-        'professional_memberships',
-        'research_publications',
-        'current_hospital',
-        'previous_workplaces',
-        'consultation_hours',
-        'online_consultation',
-        'walk_in_availability',
-        'appointment_required',
-        'max_patients_per_day',
-        'appointment_duration',
-        'surgical_expertise',
-        'treatment_approach',
-        'consultation_fees',
-        'payment_methods',
-        'average_rating',
-        'awards_recognitions',
-        'website_url',
-        'linkedin_profile',
-        'twitter_handle',
-        'youtube_channel'
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
+
+    public function specialization()
+    {
+        return $this->belongsTo(Specialization::class);
+    }
+
+    public function degree()
+    {
+        return $this->belongsTo(MedicalDegree::class);
+    }
+
+    public function personalInfo()
+    {
+        return $this->hasOne(DoctorPersonalInfo::class);
+    }
+
+    public function contactInfo()
+    {
+        return $this->hasOne(DoctorContactInfo::class);
+    }
+
+    public function professionalInfo()
+    {
+        return $this->hasOne(DoctorProfessionalInfo::class);
+    }
+
+    public function workExperience()
+    {
+        return $this->hasOne(DoctorWorkExperience::class);
+    }
+
+    public function availability()
+    {
+        return $this->hasOne(DoctorAvailability::class);
+    }
+
+    public function fees()
+    {
+        return $this->hasOne(DoctorFees::class);
+    }
+
+   
 }

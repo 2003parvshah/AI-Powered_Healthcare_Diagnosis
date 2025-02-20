@@ -11,21 +11,23 @@ class User extends Authenticatable implements JWTSubject
     use Notifiable;
 
     protected $fillable = [
-      'id' ,  'name', 'email', 'password', 'role', 'current_team_id', 'profile_photo_path', 'doctor_id', 'patient_id'
+        'name', 'email', 'phone_number', 'password', 'role',
     ];
+
+    protected $hidden = [
+        'password', 'remember_token',
+    ];
+
+    public function doctor()
+    {
+        return $this->hasOne(Doctor::class);
+    }
 
     public function patient()
     {
         return $this->hasOne(Patient::class);
     }
-    public function doctor()
-    {
-        return $this->hasOne(Doctor::class);
-    }
-    // public function profile()
-    // {
-    //     return $this->hasOne(Doctor::class);
-    // }
+
     /**
      * Get the identifier for the user.
      *

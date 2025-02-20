@@ -36,7 +36,7 @@ Route::middleware('jwt.auth')->group(function () {
     });
 
     // Normal user-only routes
-    Route::middleware('auth:api' ,'isUser')->group(function () {
+    Route::middleware('auth:api' ,'isPatient')->group(function () {
         Route::get('user/dashboard', [UserController::class, 'dashboard']);  // User dashboard
 
 Route::post('/health-issues', [HealthIssueController::class, 'store']);

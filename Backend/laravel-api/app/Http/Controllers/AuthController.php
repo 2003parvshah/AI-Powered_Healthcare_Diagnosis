@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Http\helper\mail;
 use App\Models\User;
 use App\Models\Patient;
 use App\Models\Doctor;
@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 
+use App\Http\Requests\RegisterUserRequest;   // validations file for register 
+use App\Http\Requests\LoginUserRequest;   // validations file fo login
 class AuthController extends Controller
 {
     /**
@@ -26,174 +28,111 @@ class AuthController extends Controller
     /**
      * Register a new user
      */
-    public function register(Request $request)
-    {
-        // Validate request data
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6|confirmed',
-            'role' => 'required|in:user,doctor,admin',
-            'profile_photo_path' => 'nullable|string',
-           'specialization' => 'nullable|string', // Only for doctors
-        'license_number' => 'nullable|string', // Only for doctors
-        'bio' => 'nullable|string', // Only for doctors
-        'date_of_birth' => 'nullable|date', // Only for patients
-        'gender' => 'nullable|string|in:male,female,other', // Only for patients
-        'medical_history' => 'nullable|string', // Only for patients
-        ]);
-    
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 400);
-        }
-    
-        // Create user in the database
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
-            'profile_photo_path' => $request->profile_photo_path,
-          
-        ]);
-        if ($request->role === 'doctor') {
-            // $user->doctor_id = $user->id;
-            Doctor::create([
-                // 'doctor_id' => $user->id,
-                'user_id' => $user->id,
-                'specialization' => $request->specialization,
-                'license_number' => $request->license_number,
-                'bio' => $request->bio,
-            ]);
-        } elseif ($request->role === 'user') {
-            // $user->patient_id = $user->id;
-            Patient::create([
-                // 'patient_id' => $user->id,
-                'user_id' => $user->id, 
-                'date_of_birth' => $request->date_of_birth,
-                'gender' => $request->gender,
-                'phone_number' => $request->phone_number,
-                'email' => $request->email,
-                'address' => $request->address,
-                'emergency_contact_name' => $request->emergency_contact_name,
-                'emergency_contact_phone' => $request->emergency_contact_phone,
-                'past_medical_conditions' => $request->past_medical_conditions,
-                'allergies' => $request->allergies,
-                'blood_pressure' => $request->blood_pressure,
-                'weight' => $request->weight,
-                'blood_group' => $request->blood_group,
-                'medical_history' => $request->medical_history,
-            ]);
-        }
-    
-        $user->save(); // Save the updated values
-    
-        // Generate JWT token
-        $token = JWTAuth::fromUser($user);
-    
-        // Store session in database
-        Session::create([
-            'user_id' => $user->id,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->header('User-Agent'),
-            'payload' => json_encode([]), // No session data yet
-            'last_activity' => now()->timestamp,
-        ]);
-    
-        return response()->json([
-            'user' => $user,
-            'token' => $token,
-        ], 201);
-    }
-    
+   
+public function register(RegisterUserRequest $request)
+{
+    // Validation is automatically handled by RegisterUserRequest
 
+    $user = User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'phone_number' => $request->phone_number,
+        'password' => Hash::make($request->password),
+        'role' => $request->role,
+    ]);
+
+    if ($request->role === 'doctor') {
+        Doctor::create([
+            'user_id' => $user->id,
+            'specialization_id' => $request->specialization_id,
+            'degree_id' => $request->degree_id,
+            'license_number' => $request->license_number,
+        ]);
+    } elseif ($request->role === 'patient') {
+        Patient::create([
+            'user_id' => $user->id,
+            'date_of_birth' => $request->date_of_birth,
+            'gender' => $request->gender,
+            'medical_history' => $request->medical_history,
+        ]);
+    }
+
+    $token = JWTAuth::fromUser($user);
+
+    Session::create([
+        'user_id' => $user->id,
+        'ip_address' => request()->ip(),
+        'user_agent' => request()->header('User-Agent'),
+        'payload' => json_encode([]),
+        'last_activity' => now()->timestamp,
+    ]);
+
+    // Send email notification
+    $subject = 'New User Registered';
+    $message = '<h1>Hello, ' . $request->email . ' has registered in your app</h1>';
+    mail::sendmail("admin@example.com", $subject, $message);
+
+    return response()->json(['user' => $user, 'token' => $token], 201);
+}
     /**
-     * Login and get JWT token
+     * Login user
      */
-    public function login(Request $request)
-    {
-        // Validate request
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|string',
-        ]);
+    
+public function login(LoginUserRequest $request)
+{
+    $credentials = $request->only('email', 'password');
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
-        }
-
-        $credentials = $request->only('email', 'password');
-
-        if (!$token = JWTAuth::attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
-        // Get authenticated user
-        $user = Auth::user();
-
-        // Delete previous session(s) for this user (optional)
-        Session::where('user_id', $user->id)->delete();
-
-        // Store new session in the database
-        Session::create([
-            'user_id' => $user->id,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->header('User-Agent'),
-            'payload' => json_encode(['token' => $token]), // Store the token in session
-            'last_activity' => now()->timestamp,
-        ]);
-
-        return response()->json([
-            'token' => $token,
-            'user' => $user
-        ]);
+    if (!$token = JWTAuth::attempt($credentials)) {
+        return response()->json(['error' => 'Unauthorized'], 401);
     }
 
+    $user = Auth::user();
+
+    Session::create([
+        'user_id' => $user->id,
+        'ip_address' => request()->ip(),
+        'user_agent' => request()->header('User-Agent'),
+        'payload' => json_encode(['token' => $token]),
+        'last_activity' => now()->timestamp,
+    ]);
+
+    return response()->json(['token' => $token, 'user' => $user]);
+}
+
     /**
-     * Logout and invalidate JWT token
+     * Logout from all devices
      */
     public function logout_all()
     {
         try {
-            // Authenticate user from token
             $user = JWTAuth::parseToken()->authenticate();
-
-            // Delete session record for user
-            // to logout in all system 
             Session::where('user_id', $user->id)->delete();
-
-            // Invalidate JWT token
             JWTAuth::invalidate(JWTAuth::getToken());
-
-            return response()->json(['message' => 'Logged out successfully']);
+            return response()->json(['message' => 'Logged out successfully from all devices']);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to logout'], 500);
         }
     }
 
+    /**
+     * Logout from the current device
+     */
     public function logout(Request $request)
-{
-    try {
-        // Authenticate user from token
-        $user = JWTAuth::parseToken()->authenticate();
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $token = JWTAuth::getToken();
 
-        // Get current user's token
-        $token = JWTAuth::getToken();
+            Session::where('user_id', $user->id)
+                ->where('ip_address', $request->ip())
+                ->where('user_agent', $request->header('User-Agent'))
+                ->delete();
 
-        // Find and delete the session for this specific device
-        Session::where('user_id', $user->id)
-            ->where('ip_address', $request->ip())
-            ->where('user_agent', $request->header('User-Agent'))
-            ->delete();
+            JWTAuth::invalidate($token);
 
-        // Invalidate JWT token
-        JWTAuth::invalidate($token);
-
-        return response()->json(['message' => 'Logged out successfully from this device']);
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'Failed to logout'], 500);
+            return response()->json(['message' => 'Logged out successfully from this device']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to logout'], 500);
+        }
     }
-}
-
-
 }
