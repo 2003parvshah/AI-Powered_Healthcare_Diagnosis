@@ -54,23 +54,34 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'profile_photo_path' => $request->profile_photo_path,
-            'doctor_id' => $request->role === 'doctor' ? null : null, // Initially null
-            'patient_id' => $request->role === 'user' ? null : null, // Initially null
+          
         ]);
         if ($request->role === 'doctor') {
-            $user->doctor_id = $user->id;
+            // $user->doctor_id = $user->id;
             Doctor::create([
-                'doctor_id' => $user->id,
+                // 'doctor_id' => $user->id,
+                'user_id' => $user->id,
                 'specialization' => $request->specialization,
                 'license_number' => $request->license_number,
                 'bio' => $request->bio,
             ]);
         } elseif ($request->role === 'user') {
-            $user->patient_id = $user->id;
+            // $user->patient_id = $user->id;
             Patient::create([
-                'patient_id' => $user->id,
+                // 'patient_id' => $user->id,
+                'user_id' => $user->id, 
                 'date_of_birth' => $request->date_of_birth,
                 'gender' => $request->gender,
+                'phone_number' => $request->phone_number,
+                'email' => $request->email,
+                'address' => $request->address,
+                'emergency_contact_name' => $request->emergency_contact_name,
+                'emergency_contact_phone' => $request->emergency_contact_phone,
+                'past_medical_conditions' => $request->past_medical_conditions,
+                'allergies' => $request->allergies,
+                'blood_pressure' => $request->blood_pressure,
+                'weight' => $request->weight,
+                'blood_group' => $request->blood_group,
                 'medical_history' => $request->medical_history,
             ]);
         }

@@ -13,6 +13,9 @@ class IsUser
         if ($user && $user->role === 'user') {
             return $next($request);
         }
+        elseif (Auth::check() && Auth::user()->role === 'user') {
+            return $next($request);
+        }
 
         return response()->json(['error' => 'Unauthorized, User only'], 403);
     }

@@ -8,7 +8,8 @@ return new class extends Migration
     public function up()
     {
         Schema::create('doctors', function (Blueprint $table) {
-            $table->foreignId('doctor_id')->primary()->constrained('users')->onDelete('cascade');
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('specialization')->nullable();
             $table->string('license_number')->nullable();
             $table->text('bio')->nullable();

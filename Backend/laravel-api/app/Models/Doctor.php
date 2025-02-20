@@ -8,11 +8,11 @@ class Doctor extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'doctor_id'; // Set primary key
-    public $incrementing = false; // Prevent Laravel from assuming it's an auto-incrementing ID
+    // protected $primaryKey = 'doctor_id'; // Set primary key
+    // public $incrementing = false; // Prevent Laravel from assuming it's an auto-incrementing ID
 
     protected $fillable = [
-        'doctor_id',
+        'user_id',
         'specialization',
         'license_number',
         'bio',
@@ -20,6 +20,6 @@ class Doctor extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'doctor_id');
+        return $this->belongsTo(User::class);
     }
 }

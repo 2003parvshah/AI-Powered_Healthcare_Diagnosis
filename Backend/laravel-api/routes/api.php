@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HealthIssueController;
 use App\Http\Controllers\PostController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsDoctor;
@@ -9,6 +10,7 @@ use App\Http\Middleware\IsUser;
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout']);
+
 Route::get('/hi', function () {
     return response()->json(['message' => 'hi']);
 });
@@ -34,7 +36,10 @@ Route::middleware('jwt.auth')->group(function () {
     });
 
     // Normal user-only routes
-    Route::middleware('isUser')->group(function () {
+    Route::middleware('auth:api' ,'isUser')->group(function () {
         Route::get('user/dashboard', [UserController::class, 'dashboard']);  // User dashboard
+
+Route::post('/health-issues', [HealthIssueController::class, 'store']);
+Route::get('/health-issues/{patientId}', [HealthIssueController::class, 'getPatientHealthIssues']);
     });
 });

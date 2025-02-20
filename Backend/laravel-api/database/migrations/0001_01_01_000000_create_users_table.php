@@ -19,8 +19,8 @@ return new class extends Migration {
             $table->rememberToken();
             $table->enum('role', ['user', 'doctor', 'admin'])->default('user');
             $table->text('profile_photo_path')->nullable();
-            $table->string('doctor_id', 191)->nullable();
-            $table->string('patient_id', 191)->nullable();
+            // $table->string('doctor_id', 191)->nullable();
+            // $table->string('patient_id', 191)->nullable();
             $table->timestamps();
         });
     }
