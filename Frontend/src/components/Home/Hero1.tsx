@@ -23,13 +23,13 @@ export const Hero1 = () => {
   };
 
   return (
-    <motion.div
-      className="animate-gradient flex h-screen max-h-[900px] max-w-[1540px] flex-col items-center justify-center bg-radial-[at_50%_0%] from-red-100 via-amber-50 to-blue-50"
+    <motion.section
+      className="animate-gradient flex h-screen max-h-[900px] w-full max-w-[1536px] flex-col items-center justify-center bg-radial-[at_50%_0%] from-red-100 via-amber-50 to-blue-50"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      <div className="flex h-full w-full flex-col items-center justify-center px-8">
+      <div className="flex h-full w-full flex-col items-center justify-center px-6">
         <motion.div
           className="flex w-full items-start justify-start text-9xl font-bold"
           variants={textVariants}
@@ -57,6 +57,6 @@ export const Hero1 = () => {
       >
         <ChevronDown className="animate-bounce" />
       </motion.div>
-    </motion.div>
+    </motion.section>
   );
 };

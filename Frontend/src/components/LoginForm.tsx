@@ -10,14 +10,15 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { NavLink } from "react-router";
-
+import { NavLink, useNavigate } from "react-router";
+import { useAuth } from "@/hooks/useAuth";
 interface LoginFormData {
   email: string;
   password: string;
 }
 
 export function LoginForm({ className, ...props }: { className?: string }) {
+  const { login } = useAuth();
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -29,33 +30,41 @@ export function LoginForm({ className, ...props }: { className?: string }) {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
+  const navigate = useNavigate(); // Initialize navigation
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      const response = await fetch("http://192.168.10.63:8000/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
+      const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(formData),
         },
-        body: JSON.stringify(formData),
-      });
+      );
 
       const result = await response.json();
-      console.log(result);
 
       if (!result.token) {
         throw new Error(result.message || "Login failed");
       }
-      alert("Login successful!");
+
+      login(result.token, result.user);
+
+      navigate("/dashboard"); // Redirect user to dashboard
     } catch (err) {
       setError((err as Error).message);
     } finally {
       setLoading(false);
     }
   };
+  console.log(import.meta.env.VITE_BASE_URL);
 
   return (
     <div className={cn("flex flex-col gap-6", className)}>
