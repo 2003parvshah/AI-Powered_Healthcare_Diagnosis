@@ -1,20 +1,38 @@
 import { LoginForm } from "@/components/LoginForm";
 import { ScanHeart } from "lucide-react";
 import { NavLink } from "react-router";
-
+import { useEffect } from "react";
+import { useNavigate } from "react-router";
+import { useAuth } from "@/hooks/useAuth";
 export const Login = () => {
+  const { isAuthenticated, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated && !loading) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, loading, navigate]);
   return (
     <section className="bg-muted flex h-screen flex-col items-center justify-center gap-8 px-12">
-      <NavLink
-        to="/"
-        className="flex items-center gap-2 self-center font-medium"
-      >
-        <div className="bg-primary text-primary-foreground flex h-6 w-6 items-center justify-center rounded-md">
-          <ScanHeart className="size-4" />
-        </div>
-        Health.ai
-      </NavLink>
-      <LoginForm />
+      {loading ? (
+        <>
+          <div>Loading...</div>
+        </>
+      ) : (
+        <>
+          <NavLink
+            to="/"
+            className="flex items-center gap-2 self-center font-medium"
+          >
+            <div className="bg-primary text-primary-foreground flex h-6 w-6 items-center justify-center rounded-md">
+              <ScanHeart className="size-4" />
+            </div>
+            Health.ai
+          </NavLink>
+          <LoginForm />
+        </>
+      )}
     </section>
   );
 };

@@ -10,11 +10,13 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
+import { useAuth } from "@/hooks/useAuth";
 
 interface FormData {
   name: string;
   email: string;
+  phone_number: string;
   password: string;
   confirmPassword: string;
 }
@@ -23,19 +25,20 @@ export function RegisterForm({ className, ...props }: { className?: string }) {
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
+    phone_number: "",
     password: "",
     confirmPassword: "",
   });
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
-
+  const navigate = useNavigate(); // Initialize navigation
+  const { login } = useAuth();
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(formData);
 
     setError("");
     if (formData.password !== formData.confirmPassword) {
@@ -45,31 +48,39 @@ export function RegisterForm({ className, ...props }: { className?: string }) {
 
     setLoading(true);
     try {
-      const response = await fetch("http://192.168.10.63:8000/api/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
+      const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            password: formData.password,
+            password_confirmation: formData.confirmPassword,
+            phone_number: formData.phone_number,
+            role: "patient",
+            date_of_birth: "1990-05-15",
+            gender: "male",
+            medical_history: "No known allergies.",
+          }),
         },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          password_confirmation: formData.confirmPassword,
-          role: "user",
-          date_of_birth: "1990-05-15",
-          gender: "male",
-          medical_history: "No known allergies.",
-        }),
-      });
+      );
 
       const result = await response.json();
-      console.log(result);
+      // console.log(result);
+      if (result.token) {
+        login(result.token, result.user);
 
-      if (!result.token) {
+        navigate("/dashboard"); // Redirect user to dashboard
+      } else {
         throw new Error(result.message || "Registration failed");
       }
-      alert("Registration successful!");
+
+      // alert("Registration successful!");
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -104,16 +115,29 @@ export function RegisterForm({ className, ...props }: { className?: string }) {
                   onChange={handleChange}
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                />
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="m@example.com"
+                    required
+                    value={formData.email}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone_number">Contact Number</Label>
+                  <Input
+                    id="phone_number"
+                    type="text"
+                    placeholder="987453210"
+                    required
+                    value={formData.phone_number}
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
@@ -131,7 +155,7 @@ export function RegisterForm({ className, ...props }: { className?: string }) {
                 <Input
                   id="confirmPassword"
                   type="password"
-                  placeholder="******"
+                  placeholder="*********"
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
