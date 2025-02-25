@@ -1,19 +1,23 @@
-import { TransformSection } from "@/components/Home/TransformSection";
-import { Hero1 } from "@/components/Home/Hero1";
-import { Navbar } from "@/components/Home/Navbar";
+import { TransformSection } from "@/components/home/TransformSection";
+import { Hero1 } from "@/components/home/Hero1";
+import { Navbar } from "@/components/home/Navbar";
 import { useNavigate } from "react-router";
 import { useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
-
+// import { useAuth } from "@/hooks/useAuth";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 export const Home = () => {
-  const { isAuthenticated, loading } = useAuth();
+  // const { user } = useAuth();
+  const user = useSelector((state: RootState) => state.auth.user);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated && !loading) {
-      navigate("/dashboard", { replace: true });
+    console.log(user);
+
+    if (user) {
+      navigate(`/${user.role}`, { replace: true });
     }
-  }, [isAuthenticated, loading, navigate]);
+  }, [user, navigate]);
   return (
     <>
       <Navbar />

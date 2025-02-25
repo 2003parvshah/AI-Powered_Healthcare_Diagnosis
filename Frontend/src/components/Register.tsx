@@ -11,7 +11,8 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { NavLink, useNavigate } from "react-router";
-import { useAuth } from "@/hooks/useAuth";
+import { useDispatch } from "react-redux";
+import { login } from "@/redux/authSlice";
 
 interface FormData {
   name: string;
@@ -32,7 +33,7 @@ export function RegisterForm({ className, ...props }: { className?: string }) {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const navigate = useNavigate(); // Initialize navigation
-  const { login } = useAuth();
+  const dispatch = useDispatch();
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
@@ -73,8 +74,8 @@ export function RegisterForm({ className, ...props }: { className?: string }) {
       const result = await response.json();
       // console.log(result);
       if (result.token) {
-        login(result.token, result.user);
-
+        const { user, token } = result;
+        dispatch(login({ user, token }));
         navigate("/dashboard"); // Redirect user to dashboard
       } else {
         throw new Error(result.message || "Registration failed");

@@ -1,4 +1,4 @@
-import { BadgeCheck, ChevronsUpDown, Home, LogOut } from "lucide-react";
+import { ChevronsUpDown, LogOut, User } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -17,16 +17,20 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { NavLink, useNavigate } from "react-router";
-import { useAuth } from "@/hooks/useAuth";
-
+// import { useAuth } from "@/hooks/useAuth";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "@/redux/authSlice";
+import { RootState } from "@/redux/store";
 export function NavUser() {
   const { isMobile, toggleSidebar } = useSidebar();
   const navigate = useNavigate(); // Initialize navigation
-  const { logout } = useAuth();
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  // const { logout, user } = useAuth();
+  const user = useSelector((state: RootState) => state.auth.user);
+  const dispatch = useDispatch();
+  // const  = JSON.parse(localStorage.getItem("user") || "{}");
   const handleLogout = () => {
-    logout();
-    navigate("/login");
+    dispatch(logout());
+    navigate("/ ");
   };
 
   return (
@@ -74,24 +78,14 @@ export function NavUser() {
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup>
-              <NavLink to="/dashboard/">
+              <NavLink to={`/${user?.role}/profile`}>
                 <DropdownMenuItem
                   onClick={() => {
                     if (isMobile) toggleSidebar();
                   }}
                 >
-                  <Home />
-                  Dashboard
-                </DropdownMenuItem>
-              </NavLink>
-              <NavLink to="/dashboard/profile">
-                <DropdownMenuItem
-                  onClick={() => {
-                    if (isMobile) toggleSidebar();
-                  }}
-                >
-                  <BadgeCheck />
-                  Account
+                  <User />
+                  Profile
                 </DropdownMenuItem>
               </NavLink>
             </DropdownMenuGroup>

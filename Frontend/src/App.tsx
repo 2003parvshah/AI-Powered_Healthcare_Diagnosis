@@ -1,36 +1,53 @@
 import { BrowserRouter, Routes, Route } from "react-router";
-import { AuthProvider } from "@/context/AuthProvider";
+// import { AuthProvider } from "@/context/AuthProvider";
 import { Home } from "./pages/Home";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
 import { Dashboard } from "./pages/DashboardLayout";
 import ScrollToTop from "@/components/ScrollToTop";
-import { Diagnose } from "@/components/PatientDashboard/Diagnose";
-import { PatientHome } from "@/components/PatientDashboard/PatientHome";
-import { Profile } from "./components/PatientDashboard/Profile";
+import { Diagnose } from "@/components/patientDashboard/Diagnose";
+import { PatientHome } from "@/components/patientDashboard/PatientHome";
+import { Profile } from "./components/patientDashboard/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { Specialist } from "./components/PatientDashboard/Specialist";
-
+import { Specialist } from "./components/patientDashboard/Specialist";
+import { DoctorHome } from "./components/doctor/DoctorHome";
+import { NotFound } from "./components/NotFound";
+import { AppointmentCalendar } from "./components/doctor/AppointmentCalendar";
+import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
+import { store, persistor } from "@/redux/store";
+import { DoctorProfile } from "./components/doctor/DoctorProfile";
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="dashboard" element={<ProtectedRoute />}>
-            <Route path="" element={<Dashboard />}>
-              <Route index element={<PatientHome />} />
-              <Route path="diagnose" element={<Diagnose />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="specialist" element={<Specialist />} />
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <BrowserRouter>
+          <ScrollToTop />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="patient" element={<ProtectedRoute role="patient" />}>
+              {/* <Route index element={<PatientHome />} /> */}
+              <Route path="" element={<Dashboard />}>
+                <Route index element={<PatientHome />} />
+                <Route path="diagnose" element={<Diagnose />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="specialist" element={<Specialist />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+            <Route path="doctor" element={<ProtectedRoute role="doctor" />}>
+              <Route path="" element={<Dashboard />}>
+                <Route index element={<DoctorHome />} />
+                <Route path="appointments" element={<AppointmentCalendar />} />
+                <Route path="profile" element={<DoctorProfile />} />
+              </Route>
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </PersistGate>
+    </Provider>
   );
 }
 

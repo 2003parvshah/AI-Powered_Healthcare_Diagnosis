@@ -11,14 +11,17 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { NavLink, useNavigate } from "react-router";
-import { useAuth } from "@/hooks/useAuth";
+// import { useAuth } from "@/hooks/useAuth";
+import { useDispatch } from "react-redux";
+import { login } from "@/redux/authSlice";
 interface LoginFormData {
   email: string;
   password: string;
 }
 
 export function LoginForm({ className, ...props }: { className?: string }) {
-  const { login } = useAuth();
+  // const { login } = useAuth();
+  const dispatch = useDispatch();
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -55,16 +58,16 @@ export function LoginForm({ className, ...props }: { className?: string }) {
         throw new Error(result.message || "Login failed");
       }
 
-      login(result.token, result.user);
-
-      navigate("/dashboard"); // Redirect user to dashboard
+      // login(result.token, result.user);
+      const { user, token } = result;
+      dispatch(login({ user, token }));
+      navigate(`/${result.user.role}`);
     } catch (err) {
       setError((err as Error).message);
     } finally {
       setLoading(false);
     }
   };
-  console.log(import.meta.env.VITE_BASE_URL);
 
   return (
     <div className={cn("flex flex-col gap-6", className)}>

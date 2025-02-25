@@ -10,11 +10,15 @@ export interface SidebarItem {
 
 // Sidebar menu items array
 export const sidebarItems: SidebarItem[] = [
-  { title: "Home", url: "/dashboard", icon: Home },
-  { title: "Diagnose", url: "/dashboard/diagnose", icon: Activity },
+  { title: "Home", url: "/patient", icon: Home },
+  { title: "Diagnose", url: "/patient/diagnose", icon: Activity },
   {
     title: "Specialists",
-    url: "/dashboard/specialist",
+    url: "/patient/specialist",
     icon: BriefcaseMedical,
   },
+];
+export const doctorSidebarItems: SidebarItem[] = [
+  { title: "Home", url: "/doctor", icon: Home },
+  { title: "Appointments", url: "/doctor/appointments", icon: Activity },
 ];

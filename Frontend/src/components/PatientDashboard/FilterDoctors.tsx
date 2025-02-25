@@ -121,7 +121,7 @@ function FilterDropdown({
 
 export default function DoctorFilterDropdowns() {
   return (
-    <div className="flex space-x-4 md:space-y-0 md:space-x-4">
+    <div className="flex flex-col space-y-3 sm:flex-row md:space-y-0 md:space-x-4">
       <FilterDropdown title="Specialization" options={specializations} />
       <FilterDropdown title="Price Range" options={priceRanges} />
       <FilterDropdown title="Locality" options={localities} />

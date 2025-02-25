@@ -15,11 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { NavLink } from "react-router";
 import { sidebarItems } from "@/config/sidebarItems"; // Import menu items
-import { doctorSidebarItems } from "@/config/sidebarItems";
 import { NavUser } from "./NavUser";
-// import { useAuth } from "@/hooks/useAuth";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
 //use when server stop
 // const data = {
 //   user: {
@@ -29,19 +25,10 @@ import { RootState } from "@/redux/store";
 //   },
 // };
 
-export function AppSidebar() {
+export function DoctorProfileSidebar() {
   const { isMobile, toggleSidebar } = useSidebar();
-  let appSidebarItems;
-  // const { user } = useAuth();
-  const user = useSelector((state: RootState) => state.auth.user);
-  if (user?.role === "patient") {
-    appSidebarItems = sidebarItems;
-  } else {
-    appSidebarItems = doctorSidebarItems;
-  }
-
   return (
-    <Sidebar collapsible="icon" variant="floating">
+    <Sidebar collapsible="offcanvas" variant="sidebar" side="right">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -63,7 +50,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Main menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {appSidebarItems.map((item) => (
+              {sidebarItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
