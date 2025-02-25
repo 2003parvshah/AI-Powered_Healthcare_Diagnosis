@@ -3,59 +3,58 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+use App\Models\Doctor;
+use App\Models\Patient;
 
 class UserSeeder extends Seeder
 {
     public function run()
     {
-        DB::table('users')->insert([
-            [
-                'name' => 'p1',
-                'email' => 'p1@gmail.com',
-                'email_verified_at' => Carbon::now(),
+        $users = [];
+
+        // Seed Patients
+        for ($i = 1; $i <= 5; $i++) {
+            $user = User::create([
+                'name' => "p{$i}",
+                'email' => "p{$i}@gmail.com",
+                'phone_number' => "12345678{$i}",
                 'password' => Hash::make('12345678'),
-                'remember_token' => null,
-                'role' => 'user',
-                'profile_photo_path' => null,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'name' => 'p2',
-                'email' => 'p2@gmail.com',
-                'email_verified_at' => Carbon::now(),
+                'role' => 'patient',
+                'otp' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            Patient::create([
+                'id' => $user->id,
+                'date_of_birth' => now()->subYears(25 + $i)->format('Y-m-d'),
+                'gender' => $i % 2 == 0 ? 'male' : 'female',
+                'medical_history' => 'No significant history',
+            ]);
+        }
+
+        // Seed Doctors
+        for ($i = 1; $i <= 5; $i++) {
+            $user = User::create([
+                'name' => "d{$i}",
+                'email' => "d{$i}@gmail.com",
+                'phone_number' => "1234567{$i}8",
                 'password' => Hash::make('12345678'),
-                'remember_token' => null,
-                'role' => 'user',
-                'profile_photo_path' => null,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'name' => 'd1',
-                'email' => 'd1@gmail.com',
-                'email_verified_at' => Carbon::now(),
-                'password' => Hash::make('12345678'),
-                'remember_token' => null,
                 'role' => 'doctor',
-                'profile_photo_path' => null,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ] ,
-            [
-                'name' => 'd2',
-                'email' => 'd2@gmail.com',
-                'email_verified_at' => Carbon::now(),
-                'password' => Hash::make('12345678'),
-                'remember_token' => null,
-                'role' => 'doctor',
-                'profile_photo_path' => null,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ] ,
-        ]);
+                'otp' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            Doctor::create([
+                'id' => $user->id,
+                'specialization_id' => $i, // Example specialization
+                'degree_id' => $i, // Example degree
+                'license_number' => "LIC-1000{$i}",
+            ]);
+        }
     }
 }

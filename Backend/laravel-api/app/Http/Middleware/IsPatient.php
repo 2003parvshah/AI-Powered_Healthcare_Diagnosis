@@ -1,8 +1,11 @@
 <?php
+
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Container\Attributes\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth as FacadesAuth;
 
 class IsPatient
 {
@@ -12,8 +15,7 @@ class IsPatient
 
         if ($user && $user->role === 'patient') {
             return $next($request);
-        }
-        elseif (Auth::check() && Auth::user()->role === 'patient') {
+        } elseif (FacadesAuth::check() && FacadesAuth::user()->role === 'patient') {
             return $next($request);
         }
 

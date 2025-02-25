@@ -12,6 +12,7 @@ class CreateDoctorWorkExperienceTable extends Migration
             $table->id();
             $table->unsignedBigInteger('doctor_id')->unique();
             $table->string('current_hospital_clinic')->nullable();
+            $table->decimal('experience', 5, 2)->nullable();
             $table->text('previous_workplaces')->nullable();
             $table->text('internship_residency_details')->nullable();
             $table->timestamps();

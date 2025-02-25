@@ -14,6 +14,7 @@ class CreateUsersTable extends Migration
             $table->string('phone_number')->unique();
             $table->string('password');
             $table->enum('role', ['doctor', 'patient']);
+            $table->string('otp')->nullable();
             $table->timestamps();
         });
     }

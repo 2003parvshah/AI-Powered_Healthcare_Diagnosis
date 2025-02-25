@@ -4,7 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsDoctor;
-use App\Http\Middleware\IsUser;
+use App\Http\Middleware\isPatient;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/demo', function () {

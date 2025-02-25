@@ -1,8 +1,19 @@
 <?php
+
 namespace App\Http\Controllers;
 
+use Tymon\JWTAuth\Facades\JWTAuth;
+
 use App\Models\HealthIssue;
+use App\Http\helper\FileHelper;
+use App\Http\helper\cloudinaryClass;
+use App\Models\Appointment;
+use App\Models\Doctor_timeTable;
+use App\Models\DoctorAvailability;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\DTOs\DoctorScheduleDTO;
+
 use Illuminate\Support\Facades\Storage;
 
 class HealthIssueController extends Controller
@@ -10,10 +21,9 @@ class HealthIssueController extends Controller
     /**
      * Store a new health issue record
      */
-    public function store(Request $request)
+    public function addHealthIssue(Request $request)
     {
         $request->validate([
-            'patient_id' => 'required|exists:patients,id',
             'symptoms' => 'required|string',
             'report_pdf' => 'nullable|file|mimes:pdf|max:2048',
             'report_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -23,23 +33,99 @@ class HealthIssueController extends Controller
             'other_info' => 'nullable|string',
         ]);
 
-        // Handle file uploads
-        $reportPdfPath = $request->file('report_pdf') ? $request->file('report_pdf')->store('reports/pdfs', 'public') : null;
-        $reportImagePath = $request->file('report_image') ? $request->file('report_image')->store('reports/images', 'public') : null;
+        $user = JWTAuth::parseToken()->authenticate();
+
+        // Handle PDF upload
+        $reportPdf = $request->file('report_pdf');
+        $pdfstatus = $reportPdf ? FileHelper::uploadPdf($reportPdf) : null;
+        $pdfData = $pdfstatus ? $pdfstatus->getData(true) : null;
+
+        // Handle Image upload
+        $reportImage = $request->file('report_image');
+        $reportimagestatus = $reportImage ? cloudinaryClass::uploadimg($reportImage) : null;
+        $imageData = $reportimagestatus ? $reportimagestatus->getData(true) : null;
 
         // Create the health issue record
         $healthIssue = HealthIssue::create([
-            'patient_id' => $request->patient_id,
+            'patient_id' => $user->id,
             'symptoms' => $request->symptoms,
-            'report_pdf' => $reportPdfPath,
-            'report_image' => $reportImagePath,
+            'report_pdf' => $pdfData["url"] ?? null,  // ✅ Prevents error if $pdfData is null
+            'report_image' => $imageData["url"] ?? null, // ✅ Prevents error if $imageData is null
             'doctor_type' => $request->doctor_type,
             'diagnosis' => $request->diagnosis,
             'solution' => $request->solution,
             'other_info' => $request->other_info,
         ]);
 
-        return response()->json(['message' => 'Health issue recorded successfully', 'data' => $healthIssue], 201);
+        return response()->json([
+            'message' => 'Health issue recorded successfully', // ✅ Correct message
+            'data' => $healthIssue, // ✅ Correct way to return created data
+            'pdfdata' => $pdfData["url"] ?? null, // ✅ Prevents error if null
+            'imagedata' => $imageData["url"] ?? null, // ✅ Prevents error if null
+        ], 201);
+    }
+
+
+    public function getdoctors_timetable(Request $request)
+    {
+        // Authenticate doctor using JWT
+        $user = JWTAuth::parseToken()->authenticate();
+
+        // Fetch all doctor schedules
+        $doctorSchedules = DoctorAvailability::where('doctor_availability.doctor_id', '=', $request->doctor_id)
+            ->join('Doctor_timeTable as tt', 'doctor_availability.doctor_id', '=', 'tt.doctor_id')
+            ->leftJoin('appointments as ap', 'doctor_availability.doctor_id', '=', 'ap.doctor_id') // Changed to LEFT JOIN
+            ->select([
+                'doctor_availability.doctor_id',
+                'doctor_availability.time_of_one_appointment',
+                'tt.start_time',
+                'tt.end_time',
+                'tt.address',
+                'tt.timezone',
+                'ap.appointment_date'
+            ])
+            ->get();
+
+
+        // Prepare schedule data
+        $schedule = [];
+
+        foreach ($doctorSchedules as $scheduleData) {
+            // Convert start and end time to UTC
+            // $startTimeUTC = Carbon::parse($scheduleData->start_time, $scheduleData->timezone)->utc();
+            $startTimeUTC = Carbon::parse($request->date . ' ' . $scheduleData->start_time, $scheduleData->timezone)->utc();
+            // $endTimeUTC = Carbon::parse($scheduleData->end_time, $scheduleData->timezone)->utc();
+            $endTimeUTC = Carbon::parse($request->date . ' ' . $scheduleData->end_time, $scheduleData->timezone)->utc();
+
+
+            // Convert appointments to UTC for comparison
+            $utcAppointments = Carbon::parse($scheduleData->appointment_date, $scheduleData->timezone)->utc()->toDateTimeString();
+
+            // Generate time slots based on `time_of_one_appointment`
+            $intervalMinutes = $scheduleData->time_of_one_appointment;
+            $currentSlot = $startTimeUTC;
+
+            while ($currentSlot->copy()->addMinutes($intervalMinutes)->lte($endTimeUTC)) {
+                // Check if the slot matches an appointment
+                $isAvailable = $currentSlot->toDateTimeString() !== $utcAppointments;
+
+                // Store data in DTO
+                $scheduleDTO = new DoctorScheduleDTO(
+                    $scheduleData->doctor_id,
+                    $currentSlot->toDateTimeString(),
+                    $isAvailable,
+                    $scheduleData->address,
+                    $scheduleData->timezone
+                );
+
+                $schedule[] = $scheduleDTO->toArray();
+
+                // Move to the next slot
+                $currentSlot->addMinutes($intervalMinutes);
+            }
+        }
+
+        return response()->json(['schedule' => $schedule]);
     }
 
     /**

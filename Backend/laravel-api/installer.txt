@@ -1,0 +1,58 @@
+
+DB_CONNECTION=mysql
+# DB_HOST=mysql_db
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=myuser
+DB_PASSWORD=login@db
+
+
+composer require tymon/jwt-auth
+php artisan vendor:publish --provider="Tymon\JWTAuth\Providers\LaravelServiceProvider"
+
+composer require darkaonline/l5-swagger
+
+
+composer require phpmailer/phpmailer
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=465
+MAIL_USERNAME=ddustudy@gmail.com
+MAIL_PASSWORD=juyhhwczepslrkaz
+MAIL_ENCRYPTION=ssl
+MAIL_FROM_ADDRESS=ddustudy@gmail.com
+MAIL_FROM_NAME="Ddu Study"
+
+
+composer require cloudinary-labs/cloudinary-laravel
+composer config minimum-stability
+composer config minimum-stability dev
+composer require cloudinary-labs/cloudinary-laravel
+composer clear-cache
+composer update
+composer require cloudinary-labs/cloudinary-laravel
+
+composer require league/flysystem-aws-s3
+
+acess key - AKIATFBMO77RYXRQFNUG
+secrate key - BWDq4lBeAfRO643Q8jPZdL38TY9fJvWrZBmPkgy3
+
+
+
+
+
+
+
+
+
+
+
+
+php artisan serve --host=0.0.0.0 --port=8000
+php artisan db:seed --class=SpecializationSeeder
+php artisan db:seed --class=MedicalDegreeSeeder
+php artisan db:seed --class=WeeksTableSeeder
+php artisan db:seed --class=UserSeeder
+

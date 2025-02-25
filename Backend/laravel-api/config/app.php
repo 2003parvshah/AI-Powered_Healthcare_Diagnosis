@@ -13,11 +13,13 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
-
+//     'name' => env('APP_NAME', 'Laravel'),
+// 'providers' => [
+//     CloudinaryLabs\CloudinaryLaravel\CloudinaryServiceProvider::class,
+// ],
     /*
     |--------------------------------------------------------------------------
-    | Application Environment
+    | Application Environmentsss
     |--------------------------------------------------------------------------
     |
     | This value determines the "environment" your application is currently
