@@ -11,7 +11,7 @@ class Doctor_timeTable extends Model
 {
     use HasFactory;
 
-    protected $table = 'Doctor_timeTable'; // Table name
+    protected $table = 'doctor_timeTable'; // Table name
 
     protected $fillable = [
         'doctor_id',

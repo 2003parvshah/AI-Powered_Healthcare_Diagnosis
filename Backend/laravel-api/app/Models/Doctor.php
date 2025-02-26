@@ -11,6 +11,7 @@ class Doctor extends Model
 
     protected $fillable = [
         'id',
+        'name',
         'specialization_id',
         'degree_id',
         'license_number',
@@ -60,6 +61,4 @@ class Doctor extends Model
     {
         return $this->hasOne(DoctorFees::class);
     }
-
-   
 }

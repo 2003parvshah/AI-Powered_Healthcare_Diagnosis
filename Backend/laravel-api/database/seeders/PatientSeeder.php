@@ -12,12 +12,12 @@ class PatientSeeder extends Seeder
     {
         DB::table('patients')->insert([
             [
-                'user_id' => 12,
+                'id' => 1,
                 'date_of_birth' => '1990-01-01',
                 'gender' => 'male',
                 'medical_history' => 'No major illnesses',
-                'phone_number' => '1234567890',
-                'email' => 'p1@gmail.com',
+                // 'phone_number' => '1234567890',
+                // 'email' => 'p1@gmail.com',
                 'address' => '123 Main St, City, Country',
                 'past_medical_conditions' => 'None',
                 'allergies' => 'Peanuts',
@@ -28,12 +28,13 @@ class PatientSeeder extends Seeder
                 'updated_at' => Carbon::now(),
             ],
             [
-                'user_id' => 13,
+                // 'user_id' => 13,
+                'id' => 2,
                 'date_of_birth' => '1990-01-01',
                 'gender' => 'male',
                 'medical_history' => 'No major illnesses',
-                'phone_number' => '1234567890',
-                'email' => 'p2@gmail.com',
+                // 'phone_number' => '1234567890',
+                // 'email' => 'p2@gmail.com',
                 'address' => '123 Main St, City, Country',
                 'past_medical_conditions' => 'None',
                 'allergies' => 'Peanuts',
@@ -42,7 +43,8 @@ class PatientSeeder extends Seeder
                 'blood_group' => 'O+',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
-            ] ,
+
+            ],
         ]);
     }
 }

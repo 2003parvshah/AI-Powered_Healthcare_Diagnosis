@@ -7,6 +7,8 @@ DB_DATABASE=laravel
 DB_USERNAME=myuser
 DB_PASSWORD=login@db
 
+php artisan key:generate
+
 
 composer require tymon/jwt-auth
 php artisan vendor:publish --provider="Tymon\JWTAuth\Providers\LaravelServiceProvider"
@@ -39,6 +41,21 @@ composer require league/flysystem-aws-s3
 acess key - AKIATFBMO77RYXRQFNUG
 secrate key - BWDq4lBeAfRO643Q8jPZdL38TY9fJvWrZBmPkgy3
 
+Username
+parv.wappnet@gmail.com
+
+Password
+Sur@1256
+
+Sites
+signin.aws.amazon.com
+
+MFA device name
+PersonalMFA
+
+pass key which store on mobile
+arn:aws:iam::216989106147:root
+
 
 
 
@@ -55,4 +72,6 @@ php artisan db:seed --class=SpecializationSeeder
 php artisan db:seed --class=MedicalDegreeSeeder
 php artisan db:seed --class=WeeksTableSeeder
 php artisan db:seed --class=UserSeeder
-
+php artisan db:seed --class=DoctorTimeTableSeeder
+php artisan db:seed --class=AppointmentsTableSeeder
+php artisan db:seed --class=DoctorAvailabilitySeeder

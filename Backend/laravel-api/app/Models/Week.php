@@ -15,6 +15,6 @@ class Week extends Model
 
     public function timings()
     {
-        return $this->hasMany(Doctor_timeTable::class, 'day', 'name');
+        return $this->hasMany(doctor_timeTable::class, 'day', 'name');
     }
 }

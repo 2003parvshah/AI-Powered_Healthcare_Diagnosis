@@ -13,7 +13,7 @@ class DoctorPersonalInfo extends Model
 
     protected $fillable = [
         'doctor_id',
-        'full_name',
+        // 'full_name',
         'date_of_birth',
         'gender',
         'profile_photo',

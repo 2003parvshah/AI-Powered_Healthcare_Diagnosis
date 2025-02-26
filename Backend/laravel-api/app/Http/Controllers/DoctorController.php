@@ -9,11 +9,18 @@ use App\DTOs\DoctorDTO;
 
 class DoctorController extends Controller
 {
-    public function getAllInfoDoctors()
+    public function getAllInfoDoctors(Request $request)
     {
-        $user = JWTAuth::parseToken()->authenticate();
+        if ($request->isMethod('get')) {
 
-        $doctors = Doctor::where('doctors.id', $user->id)
+            $user = JWTAuth::parseToken()->authenticate();
+            $user_id = $user->id;
+        }
+        if ($request->isMethod('post')) {
+            $user_id = $request->doctor_id;
+        }
+
+        $doctors = Doctor::where('doctors.id', $user_id)
             ->leftJoin('doctor_work_experience as w', 'doctors.id', '=', 'w.doctor_id')
             ->leftJoin('doctor_professional_info as e', 'doctors.id', '=', 'e.doctor_id')
             ->leftJoin('doctor_fees as f', 'doctors.id', '=', 'f.doctor_id')

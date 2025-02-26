@@ -8,7 +8,7 @@ use App\DTOs\DoctorDetailsDTO;
 
 class DoctorDetailsController extends Controller
 {
-    public function getDoctorDetails()
+    public function getAllDoctorDetails()
     {
         $doctorDetails = DB::table('users')
             ->join('doctors', 'users.id', '=', 'doctors.id')
@@ -18,6 +18,7 @@ class DoctorDetailsController extends Controller
             // ->where('users.id', $doctorId)
             ->select(
                 'users.name',
+                'doctors.id',
                 'doctors.specialization_id',
                 'doctor_work_experience.experience',
                 'doctor_fees.consultation_fees',
@@ -36,7 +37,8 @@ class DoctorDetailsController extends Controller
                 $doctor->specialization_id,
                 $doctor->experience,
                 $doctor->consultation_fees,
-                $doctor->profile_photo
+                $doctor->profile_photo,
+                $doctor->id
             );
         });
 

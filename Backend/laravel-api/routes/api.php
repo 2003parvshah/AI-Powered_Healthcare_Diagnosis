@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\HealthIssueController;
@@ -137,6 +138,7 @@ Route::middleware('jwt.auth')->group(function () {
         Route::get('getAllInfoDoctors', [DoctorController::class, 'getAllInfoDoctors']);
         Route::post('setTimings', [Doctor_timeTableController::class, 'setTimings']); // Store doctor's timings
         Route::get('getTimings', [Doctor_timeTableController::class, 'getTimings']); // Get doctor's timin
+        Route::get('getAppointments', [AppointmentController::class, 'getAppointments']);
     });
 
     // patient-only routes
@@ -147,6 +149,8 @@ Route::middleware('jwt.auth')->group(function () {
         Route::post('/addHealthIssue', [HealthIssueController::class, 'addHealthIssue']);
         Route::post('getdoctors_timetable', [HealthIssueController::class, 'getdoctors_timetable']);
         // Route::get('/health-issues/{patientId}', [HealthIssueController::class, 'getPatientHealthIssues']);
-        Route::get('getDoctorDetails', [DoctorDetailsController::class, 'getDoctorDetails']);
+        Route::get('getAllDoctorDetails', [DoctorDetailsController::class, 'getAllDoctorDetails']);
+        Route::post('setAppointment', [AppointmentController::class, 'setAppointment']);
+        Route::post('getAllInfoDoctors', [DoctorController::class, 'getAllInfoDoctors']);
     });
 });

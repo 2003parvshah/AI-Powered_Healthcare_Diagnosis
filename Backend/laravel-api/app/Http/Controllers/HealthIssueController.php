@@ -13,7 +13,8 @@ use App\Models\DoctorAvailability;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\DTOs\DoctorScheduleDTO;
-
+// use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class HealthIssueController extends Controller
@@ -69,12 +70,31 @@ class HealthIssueController extends Controller
     public function getdoctors_timetable(Request $request)
     {
         // Authenticate doctor using JWT
-        $user = JWTAuth::parseToken()->authenticate();
+        // $user = JWTAuth::parseToken()->authenticate();
+        $requestedDate = Carbon::parse($request->date);
+        $weekDayName = $requestedDate->format('l'); // Get the full weekday name (e.g., Monday, Tuesday)
 
         // Fetch all doctor schedules
+        // $doctorSchedules = DoctorAvailability::where('doctor_availability.doctor_id', '=', $request->doctor_id)
+        //     ->join('doctor_timeTable as tt', 'doctor_availability.doctor_id', '=', 'tt.doctor_id')
+        //     ->leftJoin('appointments as ap', 'doctor_availability.doctor_id', '=', 'ap.doctor_id') // Changed to LEFT JOIN
+        //     ->select([
+        //         'doctor_availability.doctor_id',
+        //         'doctor_availability.time_of_one_appointment',
+        //         'tt.start_time',
+        //         'tt.end_time',
+        //         'tt.address',
+        //         'tt.timezone',
+        //         'ap.appointment_date'
+        //     ])
+        //     ->get();
+
         $doctorSchedules = DoctorAvailability::where('doctor_availability.doctor_id', '=', $request->doctor_id)
-            ->join('Doctor_timeTable as tt', 'doctor_availability.doctor_id', '=', 'tt.doctor_id')
-            ->leftJoin('appointments as ap', 'doctor_availability.doctor_id', '=', 'ap.doctor_id') // Changed to LEFT JOIN
+            ->join('doctor_timeTable as tt', function ($join) use ($weekDayName) {
+                $join->on('doctor_availability.doctor_id', '=', 'tt.doctor_id')
+                    ->where('tt.day', '=', $weekDayName); // Filter by weekday
+            })
+            ->leftJoin('appointments as ap', 'doctor_availability.doctor_id', '=', 'ap.doctor_id')
             ->select([
                 'doctor_availability.doctor_id',
                 'doctor_availability.time_of_one_appointment',
@@ -82,12 +102,13 @@ class HealthIssueController extends Controller
                 'tt.end_time',
                 'tt.address',
                 'tt.timezone',
+                'tt.day',
                 'ap.appointment_date'
             ])
             ->get();
 
 
-        // Prepare schedule data
+        // Prepare schedule data    
         $schedule = [];
 
         foreach ($doctorSchedules as $scheduleData) {
@@ -96,10 +117,11 @@ class HealthIssueController extends Controller
             $startTimeUTC = Carbon::parse($request->date . ' ' . $scheduleData->start_time, $scheduleData->timezone)->utc();
             // $endTimeUTC = Carbon::parse($scheduleData->end_time, $scheduleData->timezone)->utc();
             $endTimeUTC = Carbon::parse($request->date . ' ' . $scheduleData->end_time, $scheduleData->timezone)->utc();
+            Log::info('Start Time', ['local time' => $scheduleData->start_time, 'utc time' => $startTimeUTC]);
 
 
             // Convert appointments to UTC for comparison
-            $utcAppointments = Carbon::parse($scheduleData->appointment_date, $scheduleData->timezone)->utc()->toDateTimeString();
+            // $utcAppointments = Carbon::parse($scheduleData->appointment_date, $scheduleData->timezone)->utc()->toDateTimeString();
 
             // Generate time slots based on `time_of_one_appointment`
             $intervalMinutes = $scheduleData->time_of_one_appointment;
@@ -107,7 +129,10 @@ class HealthIssueController extends Controller
 
             while ($currentSlot->copy()->addMinutes($intervalMinutes)->lte($endTimeUTC)) {
                 // Check if the slot matches an appointment
-                $isAvailable = $currentSlot->toDateTimeString() !== $utcAppointments;
+                $isAvailable = $currentSlot->toDateTimeString() !== $scheduleData->appointment_date;
+                // dd($currentSlot->toDateTimeString());  // Print Query in Console
+                // Log::info('start time', $currentSlot->toDateTimeString());
+                Log::info('Start Time', ['time' => $currentSlot->toDateTimeString(), 'appointment time' => $scheduleData->appointment_date]);
 
                 // Store data in DTO
                 $scheduleDTO = new DoctorScheduleDTO(

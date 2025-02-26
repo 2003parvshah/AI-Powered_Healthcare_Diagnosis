@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up()
     {
-        Schema::create('Doctor_timeTable', function (Blueprint $table) {
+        Schema::create('doctor_timeTable', function (Blueprint $table) {
             $table->id();
             $table->foreignId('doctor_id')->constrained('doctors')->onDelete('cascade'); // Links to doctors table
             // $table->foreignId('day')->constrained('weeks')->onDelete('cascade'); // Links to weeks table
@@ -31,6 +31,6 @@ return new class extends Migration {
 
     public function down()
     {
-        Schema::dropIfExists('Doctor_timeTable');
+        Schema::dropIfExists('doctor_timeTable');
     }
 };
