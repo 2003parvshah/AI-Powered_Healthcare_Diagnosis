@@ -10,7 +10,8 @@ class Doctor extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
+        'id',
+        'name',
         'specialization_id',
         'degree_id',
         'license_number',
@@ -60,6 +61,4 @@ class Doctor extends Model
     {
         return $this->hasOne(DoctorFees::class);
     }
-
-   
 }

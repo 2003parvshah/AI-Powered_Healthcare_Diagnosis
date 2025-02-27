@@ -1,4 +1,5 @@
 <?php
+
 namespace Database\Factories;
 
 use App\Models\Patient;
@@ -14,7 +15,7 @@ class PatientFactory extends Factory
         return [
             'user_id' => User::factory(),
             'date_of_birth' => $this->faker->date(),
-            'gender' => $this->faker->randomElement(['Male', 'Female', 'Other']),
+            'gender' => $this->faker->randomElement(['male', 'female', 'other']),
             'medical_history' => $this->faker->text(),
             'phone_number' => $this->faker->phoneNumber(),
             'email' => $this->faker->safeEmail(),

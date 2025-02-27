@@ -11,11 +11,17 @@ class User extends Authenticatable implements JWTSubject
     use Notifiable;
 
     protected $fillable = [
-        'name', 'email', 'phone_number', 'password', 'role',
+        'name',
+        'email',
+        'phone_number',
+        'password',
+        'role',
+        'otp',
     ];
 
     protected $hidden = [
-        'password', 'remember_token',
+        'password',
+        'remember_token',
     ];
 
     public function doctor()

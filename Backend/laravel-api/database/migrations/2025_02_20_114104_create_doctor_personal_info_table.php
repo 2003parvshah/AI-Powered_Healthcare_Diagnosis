@@ -13,7 +13,7 @@ class CreateDoctorPersonalInfoTable extends Migration
             $table->unsignedBigInteger('doctor_id')->unique();
             $table->string('full_name');
             $table->date('date_of_birth')->nullable();
-            $table->enum('gender', ['Male', 'Female', 'Other'])->nullable();
+            $table->enum('gender', ['male', 'female', 'other'])->nullable();
             $table->string('profile_photo')->nullable();
             $table->string('nationality')->nullable();
             $table->text('languages_spoken')->nullable();
