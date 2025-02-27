@@ -1,6 +1,4 @@
 "use client";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Sheet,
   SheetClose,
@@ -49,6 +47,7 @@ import {
   useState,
 } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { PatientDetails } from "./PatientDetails";
 
 const monthEventVariants = cva("size-2 rounded-full", {
   variants: {
@@ -173,6 +172,7 @@ const Calendar = ({
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useCalendar = () => useContext(Context);
 
 const CalendarViewTrigger = forwardRef<
@@ -211,16 +211,16 @@ const EventGroup = ({
     <div className="h-20 border-t last:border-b">
       {events
         .filter((event) => isSameHour(event.start, hour))
-        .map((event) => {
+        .map((event, index) => {
           const hoursDifference =
             differenceInMinutes(event.end, event.start) / 60;
           const startPosition = event.start.getMinutes() / 60;
 
           return (
-            <Sheet>
+            <Sheet key={index}>
               <SheetTrigger asChild>
                 <Button
-                  key={event.id}
+                  // key={event.id}
                   className={cn(
                     `relative hover:bg-${event.color} w-full`,
                     dayEventVariants({ variant: event.color }),
@@ -234,39 +234,18 @@ const EventGroup = ({
                   {event.title}
                 </Button>
               </SheetTrigger>
-              <SheetContent>
+              <SheetContent className="overflow-y-auto">
                 <SheetHeader>
-                  <SheetTitle>Edit profile</SheetTitle>
-                  <SheetDescription>
-                    Make changes to your profile here. Click save when you're
-                    done.
-                  </SheetDescription>
+                  <SheetTitle></SheetTitle>
+                  <SheetDescription className="text-foreground"></SheetDescription>
+                  <PatientDetails
+                    event={{ ...event, color: event.color ?? "default" }}
+                  />
                 </SheetHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="name" className="text-right">
-                      Name
-                    </Label>
-                    <Input
-                      id="name"
-                      value="Pedro Duarte"
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="username" className="text-right">
-                      Username
-                    </Label>
-                    <Input
-                      id="username"
-                      value="@peduarte"
-                      className="col-span-3"
-                    />
-                  </div>
-                </div>
+
                 <SheetFooter>
                   <SheetClose asChild>
-                    <Button type="submit">Save changes</Button>
+                    {/* <Button type="submit">Save changes</Button> */}
                   </SheetClose>
                 </SheetFooter>
               </SheetContent>

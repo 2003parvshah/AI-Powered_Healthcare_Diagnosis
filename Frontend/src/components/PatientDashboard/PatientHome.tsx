@@ -11,7 +11,7 @@ export const PatientHome = () => {
     const fetchProfile = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/api/profile`,
+          `${import.meta.env.VITE_BASE_URL}/profile`,
           { headers: { Authorization: `Bearer ${token}` } },
         );
         // console.log("Result", response);

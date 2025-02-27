@@ -17,6 +17,8 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { store, persistor } from "@/redux/store";
 import { DoctorProfile } from "./components/doctor/DoctorProfile";
+import { DoctorRegister } from "./pages/DoctorRegister";
+import SetAvailability from "./components/doctor/SetAvailability";
 function App() {
   return (
     <Provider store={store}>
@@ -27,6 +29,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/doctor-register" element={<DoctorRegister />} />
             <Route path="patient" element={<ProtectedRoute role="patient" />}>
               {/* <Route index element={<PatientHome />} /> */}
               <Route path="" element={<Dashboard />}>
@@ -41,6 +44,7 @@ function App() {
                 <Route index element={<DoctorHome />} />
                 <Route path="appointments" element={<AppointmentCalendar />} />
                 <Route path="profile" element={<DoctorProfile />} />
+                <Route path="set-availability" element={<SetAvailability />} />
               </Route>
             </Route>
             <Route path="*" element={<NotFound />} />

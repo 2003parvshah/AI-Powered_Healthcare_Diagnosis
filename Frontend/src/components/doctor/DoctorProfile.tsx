@@ -32,45 +32,92 @@ export const DoctorProfile = () => {
   const token = useSelector((state: RootState) => state.auth.token);
 
   // State for doctor details
-  const [personalInfo, setPersonalInfo] = useState<DoctorPersonalInfo | null>(
-    null,
+  const [personalInfo, setPersonalInfo] = useState<Partial<DoctorPersonalInfo>>(
+    {},
   );
+  const [workInfo, setWorkInfo] = useState<Partial<DoctorPersonalInfo>>({});
+  const [feeInfo, setFeeInfo] = useState<Partial<DoctorPersonalInfo>>({});
   const [editData, setEditData] = useState<Partial<DoctorPersonalInfo>>({});
-  const [isEditing, setIsEditing] = useState(false);
+  const [editWorkData, setEditWorkData] = useState<Partial<DoctorPersonalInfo>>(
+    {},
+  );
+  const [editFeeData, setEditFeeData] = useState<Partial<DoctorPersonalInfo>>(
+    {},
+  );
+  // const [isEditing, setIsEditing] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isEditingWork, setIsEditingWork] = useState(false);
+  const [isEditingFees, setIsEditingFees] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   // Fetch Doctor Data
   useEffect(() => {
     const fetchDoctorDetails = async () => {
       try {
-        const personalResponse = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/api/doctor/getDoctorPersonalInfo`,
-          {
+        const responses = await Promise.allSettled([
+          axios.get(
+            `${import.meta.env.VITE_BASE_URL}/doctor/getDoctorPersonalInfo`,
+            {
+              headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          ),
+          axios.get(
+            `${import.meta.env.VITE_BASE_URL}/doctor/getDoctorWorkExperience`,
+            {
+              headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          ),
+          axios.get(`${import.meta.env.VITE_BASE_URL}/doctor/getDoctorFees`, {
             headers: {
               Accept: "application/json",
               Authorization: `Bearer ${token}`,
             },
-          },
-        );
+          }),
+        ]);
 
-        if (personalResponse.status === 200) {
-          setPersonalInfo(personalResponse.data.data);
-          setEditData(personalResponse.data.data); // Pre-fill the edit form
+        const [personalResponse, workResponse, feeResponse] = responses;
+
+        if (personalResponse.status === "fulfilled") {
+          setPersonalInfo(personalResponse.value.data.data);
+          setEditData(personalResponse.value.data.data); // Pre-fill the edit form
+        } else {
+          console.error(
+            "Error fetching personal details:",
+            personalResponse.reason,
+          );
         }
-        // console.log(personalInfo);
+
+        if (workResponse.status === "fulfilled") {
+          setWorkInfo(workResponse.value.data.data);
+          setEditWorkData(workResponse.value.data.data);
+        } else {
+          console.error("Error fetching work experience:", workResponse.reason);
+        }
+
+        if (feeResponse.status === "fulfilled") {
+          setFeeInfo(feeResponse.value.data.data);
+          setEditFeeData(feeResponse.value.data.data);
+        } else {
+          console.error("Error fetching fee details:", feeResponse.reason);
+        }
       } catch (err) {
-        console.error("Error fetching doctor details:", err);
+        console.error("Unexpected error fetching doctor details:", err);
       }
     };
 
     fetchDoctorDetails();
   }, [token]);
-
   // Handle update API call
   // const handleUpdateProfile = async () => {
   //   console.log(editData);
   //   try {
   //     await axios.post(
-  //       `${import.meta.env.VITE_BASE_URL}/api/doctor/setDoctorPersonalInfo`,
+  //       `${import.meta.env.VITE_BASE_URL}/doctor/setDoctorPersonalInfo`,
   //       editData,
   //       {
   //         headers: {
@@ -103,7 +150,7 @@ export const DoctorProfile = () => {
       }
 
       const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/api/doctor/setDoctorPersonalInfo`,
+        `${import.meta.env.VITE_BASE_URL}/doctor/setDoctorPersonalInfo`,
         formData,
         {
           headers: {
@@ -122,7 +169,89 @@ export const DoctorProfile = () => {
       console.error("Error updating profile:", err);
     } finally {
       setIsUploading(false);
-      setIsEditing(false);
+      setIsEditingProfile(false);
+    }
+  };
+  const handleUpdateWorkProfile = async () => {
+    setIsUploading(true);
+    console.log(editWorkData);
+
+    try {
+      const formData = new FormData();
+      formData.append(
+        "current_hospital_clinic",
+        editWorkData.current_hospital_clinic || "",
+      );
+      formData.append(
+        "previous_workplaces",
+        editWorkData.previous_workplaces || "",
+      );
+      formData.append(
+        "internship_residency_details",
+        editWorkData.internship_residency_details || "",
+      );
+      formData.append("experience", editWorkData.experience || "");
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/doctor/setDoctorWorkExperience`,
+        formData,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (response.status === 201) {
+        setWorkInfo(response.data.data);
+      } else {
+        console.error("Error updating profile:", response.statusText);
+      }
+    } catch (err) {
+      console.error("Error updating profile:", err);
+    } finally {
+      setIsUploading(false);
+      setIsEditingWork(false);
+    }
+  };
+  const handleUpdateFee = async () => {
+    setIsUploading(true);
+    // console.log(editWorkData);
+
+    try {
+      const formData = new FormData();
+      formData.append(
+        "consultation_fees",
+        editFeeData.consultation_fees?.toString() || "",
+      );
+      formData.append(
+        "payment_methods_accepted",
+        editFeeData.payment_methods_accepted || "",
+      );
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/doctor/setDoctorFees`,
+        formData,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      console.log(response);
+
+      if (response.status === 201) {
+        setFeeInfo(response.data.data);
+      } else {
+        console.error("Error updating profile:", response.statusText);
+      }
+    } catch (err) {
+      console.error("Error updating profile:", err);
+    } finally {
+      setIsUploading(false);
+      setIsEditingFees(false);
     }
   };
 
@@ -167,7 +296,10 @@ export const DoctorProfile = () => {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               Basic Information{" "}
-              <Dialog open={isEditing} onOpenChange={setIsEditing}>
+              <Dialog
+                open={isEditingProfile}
+                onOpenChange={setIsEditingProfile}
+              >
                 <DialogTrigger asChild>
                   <Button size="sm" variant="outline">
                     <Pencil size={15} />
@@ -311,33 +443,215 @@ export const DoctorProfile = () => {
           </CardContent>
         </Card>
 
-        {/* Professional Information */}
-        {/* <Card>
+        {/* Work Information */}
+        <Card>
           <CardHeader>
-            <CardTitle>Professional Information</CardTitle>
+            <CardTitle className="flex items-center justify-between">
+              Work Information{" "}
+              <Dialog open={isEditingWork} onOpenChange={setIsEditingWork}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline">
+                    <Pencil size={15} />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle>Edit Work Experience</DialogTitle>
+                    <DialogDescription>
+                      Update your experience details and save the changes.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div>
+                      <Label htmlFor="experience" className="text-right">
+                        experience
+                      </Label>
+                      <Input
+                        id="experience"
+                        value={editWorkData.experience || ""}
+                        className="col-span-3"
+                        onChange={(e) =>
+                          setEditWorkData({
+                            ...editWorkData,
+                            experience: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label
+                        htmlFor="current_hospital_clinic"
+                        className="text-right"
+                      >
+                        current_hospital_clinic
+                      </Label>
+                      <Input
+                        id="current_hospital_clinic"
+                        value={editWorkData.current_hospital_clinic || ""}
+                        className="col-span-3"
+                        onChange={(e) =>
+                          setEditWorkData({
+                            ...editWorkData,
+                            current_hospital_clinic: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label
+                        htmlFor="previous_workplaces"
+                        className="text-right"
+                      >
+                        previous_workplaces
+                      </Label>
+                      <Input
+                        id="previous_workplaces"
+                        value={editWorkData.previous_workplaces || ""}
+                        className="col-span-3"
+                        onChange={(e) =>
+                          setEditWorkData({
+                            ...editWorkData,
+                            previous_workplaces: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label
+                        htmlFor="internship_residency_details"
+                        className="text-right"
+                      >
+                        internship_residency_details
+                      </Label>
+                      <Input
+                        id="internship_residency_details"
+                        value={editWorkData.internship_residency_details || ""}
+                        className="col-span-3"
+                        onChange={(e) =>
+                          setEditWorkData({
+                            ...editWorkData,
+                            internship_residency_details: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      onClick={handleUpdateWorkProfile}
+                      disabled={isUploading}
+                    >
+                      {isUploading ? "Uploading..." : "Save changes"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <InfoRow label="Experience" value={workInfo.experience} />
+            <InfoRow
+              label="current_hospital_clinic"
+              value={workInfo?.current_hospital_clinic}
+            />
+            <InfoRow
+              label="previous_workplaces"
+              value={workInfo?.previous_workplaces}
+            />
+            <InfoRow
+              label="internship_residency_details"
+              value={workInfo?.internship_residency_details}
+            />
+          </CardContent>
+        </Card>
+        {/* Fee Info */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              Fees Information{" "}
+              <Dialog open={isEditingFees} onOpenChange={setIsEditingFees}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline">
+                    <Pencil size={15} />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle>Edit Fees</DialogTitle>
+                    <DialogDescription>
+                      Update your Fees details and save the changes.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div>
+                      <Label htmlFor="consultation_fees" className="text-right">
+                        consultation_fees
+                      </Label>
+                      <Input
+                        id="consultation_fees"
+                        value={editFeeData.consultation_fees || ""}
+                        className="col-span-3"
+                        onChange={(e) =>
+                          setEditFeeData({
+                            ...editFeeData,
+                            consultation_fees: parseInt(e.target.value),
+                          })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label
+                        htmlFor="payment_methods_accepted"
+                        className="text-right"
+                      >
+                        payment_methods_accepted
+                      </Label>
+                      <Input
+                        id="payment_methods_accepted"
+                        value={editFeeData.payment_methods_accepted || ""}
+                        className="col-span-3"
+                        onChange={(e) =>
+                          setEditFeeData({
+                            ...editFeeData,
+                            payment_methods_accepted: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button onClick={handleUpdateFee} disabled={isUploading}>
+                      {isUploading ? "Uploading..." : "Save changes"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <InfoRow
-              label="Medical Council Registration #"
-              value={professionalInfo?.medical_council_registration_number}
+              label="consultation_fees"
+              value={feeInfo?.consultation_fees}
             />
             <InfoRow
-              label="University Attended"
-              value={professionalInfo?.university_college_attended}
-            />
-            <InfoRow
-              label="Board Certifications"
-              value={professionalInfo?.board_certifications}
+              label="payment_methods_accepted"
+              value={feeInfo?.payment_methods_accepted}
             />
           </CardContent>
-        </Card> */}
+        </Card>
       </div>
     </section>
   );
 };
 
 // **Reusable Components for Cleaner Code**
-const InfoRow = ({ label, value }: { label: string; value?: string }) => (
+const InfoRow = ({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string | number;
+}) => (
   <div className="flex items-center gap-3">
     <div>
       <p className="text-muted-foreground text-sm">{label}</p>

@@ -9,6 +9,7 @@ export const Navbar = () => {
             <ScanHeart />
             HealthAI
           </div>
+          <a href="#get-started">Get Started</a>
         </div>
       </div>
     </nav>

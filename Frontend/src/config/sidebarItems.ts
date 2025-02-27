@@ -1,5 +1,11 @@
 // src/config/sidebarItems.ts
-import { LucideIcon, Home, Activity, BriefcaseMedical } from "lucide-react";
+import {
+  LucideIcon,
+  Home,
+  Activity,
+  BriefcaseMedical,
+  Clock,
+} from "lucide-react";
 
 // Define the type for menu items
 export interface SidebarItem {
@@ -21,4 +27,5 @@ export const sidebarItems: SidebarItem[] = [
 export const doctorSidebarItems: SidebarItem[] = [
   { title: "Home", url: "/doctor", icon: Home },
   { title: "Appointments", url: "/doctor/appointments", icon: Activity },
+  { title: "Set Availability", url: "/doctor/set-availability", icon: Clock },
 ];

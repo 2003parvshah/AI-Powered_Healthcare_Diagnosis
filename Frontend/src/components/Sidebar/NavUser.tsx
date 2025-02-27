@@ -45,7 +45,7 @@ export function NavUser() {
               <Avatar className="h-8 w-8">
                 <AvatarImage src="#" alt="Avatar" />
                 <AvatarFallback className="bg-transparent">
-                  {user?.name[0]}
+                  {/* {user?.name[0]} */}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -66,7 +66,7 @@ export function NavUser() {
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="#" alt="Avatar" />
                   <AvatarFallback className="bg-transparent">
-                    {user?.name[0]}
+                    {/* {user?.name[0]} */}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">

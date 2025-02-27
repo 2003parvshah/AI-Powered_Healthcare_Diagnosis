@@ -6,11 +6,14 @@ import { RootState } from "@/redux/store";
 
 const fetchUser = async (token: string) => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/userProfile`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
+    const response = await fetch(
+      `${import.meta.env.VITE_BASE_URL}/userProfile`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error("Failed to fetch user");

@@ -40,17 +40,14 @@ export function LoginForm({ className, ...props }: { className?: string }) {
     setError("");
     setLoading(true);
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/api/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(formData),
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
-      );
+        body: JSON.stringify(formData),
+      });
 
       const result = await response.json();
 
