@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -6,9 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 class Patient extends Model
 {
     protected $fillable = [
-        'user_id', 'date_of_birth', 'gender', 'medical_history', 'phone_number',
-        'email', 'address', 'emergency_contact_name', 'emergency_contact_phone',
-        'past_medical_conditions', 'allergies', 'blood_pressure', 'weight', 'blood_group',
+        'id',
+        'date_of_birth',
+        'gender',
+        'medical_history',
+        'phone_number',
+        'address',
+        'profile_photo',
+        'past_medical_conditions',
+        'allergies',
+        'blood_pressure',
+        'weight',
+        'blood_group',
     ];
 
     public function user()

@@ -58,7 +58,7 @@ class DoctorSeeder extends Seeder
                 'user_id' => 15,
                 'full_name' => 'd2',
                 'date_of_birth' => '1975-11-20',
-                'gender' => 'Female',
+                'gender' => 'female',
                 'profile_photo' => 'https://example.com/photos/jane_smith.jpg',
                 'nationality' => 'Canadian',
                 'languages_spoken' => 'English, French',
