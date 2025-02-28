@@ -10,10 +10,11 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { specializations } from "@/config/specializations";
+import { medicalDegrees } from "@/config/medicalDegrees";
 import { NavLink, useNavigate } from "react-router";
 import { useDispatch } from "react-redux";
 import { login } from "@/redux/authSlice";
-
 import {
   Select,
   SelectContent,
@@ -21,40 +22,57 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 interface FormData {
   name: string;
-  gender: string;
-  date_of_birth: string;
-  role: string;
-  medical_history: string;
   email: string;
   phone_number: string;
+  degree: string;
+  date_of_birth: string;
+  gender: string;
+  specialization: string;
+  license_number: string;
+  bio: string;
+  role: string;
   password: string;
   password_confirmation: string;
 }
 
-export function RegisterForm({ className, ...props }: { className?: string }) {
+export function DoctorRegisterForm({
+  className,
+  ...props
+}: {
+  className?: string;
+}) {
   const [formData, setFormData] = useState<FormData>({
     name: "",
+    email: "",
     gender: "",
     date_of_birth: "",
-    role: "patient",
-    email: "",
     phone_number: "",
+    degree: "",
+    specialization: "",
+    license_number: "",
+    bio: "",
+    role: "doctor",
     password: "",
     password_confirmation: "",
-    medical_history: "No known allergies.",
   });
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
-  const navigate = useNavigate(); // Initialize navigation
+  const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
-  const handleSelectChange = (value: string) => {
-    setFormData({ ...formData, gender: value });
-  };
+
+  // const handleSpecializationChange = (value: string) => {
+  //   setFormData({ ...formData, specialization_id: parseInt(value, 10) });
+  // };
+  // const handleSelectChange = (value: string) => {
+  //   setFormData({ ...formData, gender: value });
+  // };
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -66,6 +84,8 @@ export function RegisterForm({ className, ...props }: { className?: string }) {
 
     setLoading(true);
     try {
+      console.log(formData);
+      //TODO change to axios
       const response = await fetch(
         `${import.meta.env.VITE_BASE_URL}/register`,
         {
@@ -79,16 +99,13 @@ export function RegisterForm({ className, ...props }: { className?: string }) {
       );
 
       const result = await response.json();
-      // console.log(result);
       if (result.token) {
         const { user, token } = result;
         dispatch(login({ user, token }));
-        navigate("/dashboard"); // Redirect user to dashboard
+        navigate("/dashboard");
       } else {
         throw new Error(result.message || "Registration failed");
       }
-
-      // alert("Registration successful!");
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -125,8 +142,36 @@ export function RegisterForm({ className, ...props }: { className?: string }) {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="m@example.com"
+                    required
+                    value={formData.email}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone_number">Contact Number</Label>
+                  <Input
+                    id="phone_number"
+                    type="text"
+                    placeholder="987453210"
+                    required
+                    value={formData.phone_number}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
                   <Label htmlFor="gender">Gender</Label>
-                  <Select onValueChange={handleSelectChange}>
+                  <Select
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, gender: value })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Male" />
                     </SelectTrigger>
@@ -149,27 +194,57 @@ export function RegisterForm({ className, ...props }: { className?: string }) {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
+                {/*  */}
                 <div>
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="license_number">License Number</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    placeholder="m@example.com"
+                    id="license_number"
+                    type="text"
+                    placeholder="DOC1234"
                     required
-                    value={formData.email}
+                    value={formData.license_number}
                     onChange={handleChange}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phone_number">Contact Number</Label>
-                  <Input
-                    id="phone_number"
-                    type="text"
-                    placeholder="987453210"
-                    required
-                    value={formData.phone_number}
-                    onChange={handleChange}
-                  />
+                  <Label htmlFor="degree_id">Degree</Label>
+                  <Select
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, degree: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Degree" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {medicalDegrees.map((degree) => (
+                        <SelectItem key={degree} value={degree}>
+                          {degree}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <div>
+                  <Label htmlFor="specialization">Specialization</Label>
+                  <Select
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, specialization: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Specialization" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {specializations.map((specialization) => (
+                        <SelectItem key={specialization} value={specialization}>
+                          {specialization}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="grid gap-2">
@@ -207,22 +282,18 @@ export function RegisterForm({ className, ...props }: { className?: string }) {
                 </NavLink>
               </div>
               <div className="text-center text-sm">
-                Want to register as doctor?{" "}
+                Want to register as patient?{" "}
                 <NavLink
-                  to="/doctor-register"
+                  to="/register"
                   className="underline underline-offset-4"
                 >
-                  Register as doctor
+                  Register as Patient
                 </NavLink>
               </div>
             </div>
           </form>
         </CardContent>
       </Card>
-      <div className="text-muted-foreground text-center text-xs">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
-      </div>
     </div>
   );
 }

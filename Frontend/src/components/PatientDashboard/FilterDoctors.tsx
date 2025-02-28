@@ -51,20 +51,22 @@ const priceRanges = [
   { label: "$200+", value: "200+" },
 ];
 
-const localities = [
-  { label: "Downtown", value: "downtown" },
-  { label: "Uptown", value: "uptown" },
-  { label: "Midtown", value: "midtown" },
-  { label: "Suburbs", value: "suburbs" },
-  { label: "West End", value: "west-end" },
-];
+// const localities = [
+//   { label: "Downtown", value: "downtown" },
+//   { label: "Uptown", value: "uptown" },
+//   { label: "Midtown", value: "midtown" },
+//   { label: "Suburbs", value: "suburbs" },
+//   { label: "West End", value: "west-end" },
+// ];
 
 function FilterDropdown({
   title,
   options,
+  onSelect,
 }: {
   title: string;
   options: { label: string; value: string }[];
+  onSelect: (value: string | null) => void;
 }) {
   const [open, setOpen] = React.useState(false);
   const [selectedValue, setSelectedValue] = React.useState<string | null>(null);
@@ -94,9 +96,10 @@ function FilterDropdown({
                 <CommandItem
                   key={option.value}
                   onSelect={() => {
-                    setSelectedValue((prev) =>
-                      prev === option.value ? null : option.value,
-                    );
+                    const newValue =
+                      selectedValue === option.value ? null : option.value;
+                    setSelectedValue(newValue);
+                    onSelect(newValue);
                     setOpen(false);
                   }}
                 >
@@ -119,12 +122,25 @@ function FilterDropdown({
   );
 }
 
-export default function DoctorFilterDropdowns() {
+export default function DoctorFilterDropdowns({
+  onSpecializationChange,
+  onPriceRangeChange,
+}: {
+  onSpecializationChange: (value: string | null) => void;
+  onPriceRangeChange: (value: string | null) => void;
+}) {
   return (
-    <div className="flex space-x-4 md:space-y-0 md:space-x-4">
-      <FilterDropdown title="Specialization" options={specializations} />
-      <FilterDropdown title="Price Range" options={priceRanges} />
-      <FilterDropdown title="Locality" options={localities} />
+    <div className="flex flex-col space-y-3 sm:flex-row md:space-y-0 md:space-x-4">
+      <FilterDropdown
+        title="Specialization"
+        options={[{ label: "Show All", value: "" }, ...specializations]}
+        onSelect={onSpecializationChange}
+      />
+      <FilterDropdown
+        title="Price Range"
+        options={[{ label: "Show All", value: "" }, ...priceRanges]}
+        onSelect={onPriceRangeChange}
+      />
     </div>
   );
 }

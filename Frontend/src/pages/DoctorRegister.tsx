@@ -1,4 +1,3 @@
-import { RegisterForm } from "@/components/Register";
 import { ScanHeart } from "lucide-react";
 import { NavLink } from "react-router";
 import { useEffect } from "react";
@@ -6,7 +5,8 @@ import { useNavigate } from "react-router";
 // import { useAuth } from "@/hooks/useAuth";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-export const Register = () => {
+import { DoctorRegisterForm } from "@/components/DoctorRegisterForm";
+export const DoctorRegister = () => {
   // const { user, isLoading } = useAuth();
   const user = useSelector((state: RootState) => state.auth.user);
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ export const Register = () => {
           </div>
           Health.ai
         </NavLink>
-        <RegisterForm />
+        <DoctorRegisterForm />
       </>
       {/* )} */}
 
