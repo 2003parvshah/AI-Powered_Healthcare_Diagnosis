@@ -6,7 +6,6 @@ import { Register } from "./pages/Register";
 import { Dashboard } from "./pages/DashboardLayout";
 import ScrollToTop from "@/components/ScrollToTop";
 import { Diagnose } from "@/components/patientDashboard/Diagnose";
-import { PatientHome } from "@/components/patientDashboard/PatientHome";
 import { Profile } from "./components/patientDashboard/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Specialist } from "./components/patientDashboard/Specialist";
@@ -33,8 +32,8 @@ function App() {
             <Route path="patient" element={<ProtectedRoute role="patient" />}>
               {/* <Route index element={<PatientHome />} /> */}
               <Route path="" element={<Dashboard />}>
-                <Route index element={<PatientHome />} />
-                <Route path="diagnose" element={<Diagnose />} />
+                <Route index element={<Diagnose />} />
+                {/* <Route path="diagnose" element={< />} /> */}
                 <Route path="profile" element={<Profile />} />
                 <Route path="specialist" element={<Specialist />} />
               </Route>

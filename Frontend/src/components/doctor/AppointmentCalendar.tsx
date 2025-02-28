@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import axios from "axios";
+import { toast } from "sonner";
 
 interface AppointmentInterface {
   appointment_id: number;
@@ -61,8 +62,13 @@ export const AppointmentCalendar = () => {
           );
 
           setEvents(updatedEvents);
+          toast.success("Fetched Appoinments");
+          if (updatedEvents.length == 0) {
+            toast.warning("No appoinments");
+          }
         }
       } catch (error) {
+        toast.error("Error occured");
         console.error("Error fetching appointments:", error);
       }
     };
@@ -82,52 +88,55 @@ export const AppointmentCalendar = () => {
   return (
     <>
       {events.length > 0 ? (
-        <Calendar events={events}>
-          <div className="flex h-dvh flex-col py-6">
-            <div className="mb-6 flex items-center gap-2 px-6">
-              <CalendarViewTrigger
-                className="aria-[current=true]:bg-accent"
-                view="day"
-              >
-                Day
-              </CalendarViewTrigger>
-              <CalendarViewTrigger
-                view="week"
-                className="aria-[current=true]:bg-accent"
-              >
-                Week
-              </CalendarViewTrigger>
-              <CalendarViewTrigger
-                view="month"
-                className="aria-[current=true]:bg-accent"
-              >
-                Month
-              </CalendarViewTrigger>
+        <div className="min-w-lg overflow-scroll">
+          <Calendar events={events}>
+            <div className="flex h-dvh flex-col py-6">
+              <div className="mb-6 flex flex-col items-start justify-between gap-2 px-6 sm:flex-row">
+                <div>
+                  <CalendarViewTrigger
+                    className="aria-[current=true]:bg-accent"
+                    view="day"
+                  >
+                    Day
+                  </CalendarViewTrigger>
+                  <CalendarViewTrigger
+                    view="week"
+                    className="aria-[current=true]:bg-accent"
+                  >
+                    Week
+                  </CalendarViewTrigger>
+                  <CalendarViewTrigger
+                    view="month"
+                    className="aria-[current=true]:bg-accent"
+                  >
+                    Month
+                  </CalendarViewTrigger>
+                </div>
+                <div className="flex items-center gap-4">
+                  <CalendarCurrentDate />
 
-              <span className="flex-1" />
+                  <CalendarPrevTrigger>
+                    <ChevronLeft size={20} />
+                    <span className="sr-only">Previous</span>
+                  </CalendarPrevTrigger>
 
-              <CalendarCurrentDate />
+                  <CalendarTodayTrigger>Today</CalendarTodayTrigger>
 
-              <CalendarPrevTrigger>
-                <ChevronLeft size={20} />
-                <span className="sr-only">Previous</span>
-              </CalendarPrevTrigger>
+                  <CalendarNextTrigger>
+                    <ChevronRight size={20} />
+                    <span className="sr-only">Next</span>
+                  </CalendarNextTrigger>
+                </div>
+              </div>
 
-              <CalendarTodayTrigger>Today</CalendarTodayTrigger>
-
-              <CalendarNextTrigger>
-                <ChevronRight size={20} />
-                <span className="sr-only">Next</span>
-              </CalendarNextTrigger>
+              <div className="relative min-w-lg flex-1 overflow-auto px-6">
+                <CalendarDayView />
+                <CalendarWeekView />
+                <CalendarMonthView />
+              </div>
             </div>
-
-            <div className="relative flex-1 overflow-auto px-6">
-              <CalendarDayView />
-              <CalendarWeekView />
-              <CalendarMonthView />
-            </div>
-          </div>
-        </Calendar>
+          </Calendar>
+        </div>
       ) : (
         ""
       )}

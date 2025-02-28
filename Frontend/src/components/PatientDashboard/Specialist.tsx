@@ -15,18 +15,19 @@ import axios from "axios";
 interface doctorInterface {
   id: number;
   name: string;
-  specialty: string;
+  specialization: string;
   consultation_fees: number;
   experience: number;
   profile_photo: string;
+  degree: string;
 }
 // const doctors = [
-//   { name: "Dr. Jennie Kim", specialty: "Dermatology", price: 110 },
-//   { name: "Prof. Dr. Niall Horan", specialty: "Psychiatry", price: 36 },
-//   { name: "Dr. Alexandra Boje", specialty: "Cardiology", price: 200 },
-//   { name: "Dr. Veronica Nguyen", specialty: "Gynecology", price: 36 },
-//   { name: "Dr. Adam Hall", specialty: "Orthopedics", price: 360 },
-//   { name: "Prof. Dr. Dirly Sanders", specialty: "Anesthesiology", price: 7006 },
+//   { name: "Dr. Jennie Kim", specialization: "Dermatology", price: 110 },
+//   { name: "Prof. Dr. Niall Horan", specialization: "Psychiatry", price: 36 },
+//   { name: "Dr. Alexandra Boje", specialization: "Cardiology", price: 200 },
+//   { name: "Dr. Veronica Nguyen", specialization: "Gynecology", price: 36 },
+//   { name: "Dr. Adam Hall", specialization: "Orthopedics", price: 360 },
+//   { name: "Prof. Dr. Dirly Sanders", specialization: "Anesthesiology", price: 7006 },
 // ];
 
 export const Specialist = () => {
@@ -60,7 +61,7 @@ export const Specialist = () => {
   const filteredDoctors = doctors?.filter((doctor) => {
     const matchesSpecialization =
       !selectedSpecialization ||
-      doctor.specialty.toLowerCase() === selectedSpecialization;
+      doctor.specialization.toLowerCase() === selectedSpecialization;
 
     const matchesPrice =
       !selectedPriceRange ||
@@ -99,45 +100,49 @@ export const Specialist = () => {
         Recommended Doctors ({filteredDoctors?.length})
       </h3>
       <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filteredDoctors?.map((doctor, index) => (
-          <Card key={index} className="flex max-w-2xl flex-col">
-            <CardHeader className="flex gap-4 p-2">
-              <div className="flex flex-row items-stretch justify-start gap-4">
-                <img
-                  src={`${doctor.profile_photo}`}
-                  alt={doctor.name}
-                  className="aspect-square w-16 rounded-full object-cover"
-                />
-                <div className="flex flex-col justify-evenly">
-                  <CardTitle className="text-lg font-medium">
-                    {doctor.name}
-                  </CardTitle>
-                  <CardDescription className="text-muted-foreground">
-                    {doctor.specialty}
-                  </CardDescription>
+        {filteredDoctors?.map((doctor, index) =>
+          doctor.experience ? (
+            <Card key={index} className="flex max-w-2xl flex-col">
+              <CardHeader className="flex gap-4 p-2">
+                <div className="flex flex-row items-stretch justify-start gap-4">
+                  <img
+                    src={`${doctor.profile_photo}`}
+                    alt={doctor.name}
+                    className="aspect-square w-16 rounded-full object-cover"
+                  />
+                  <div className="flex flex-col justify-evenly">
+                    <CardTitle className="text-lg font-medium">
+                      {doctor.name}
+                    </CardTitle>
+                    <CardDescription className="text-muted-foreground">
+                      {doctor.specialization}
+                    </CardDescription>
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent className="bg-secondary m-2 flex flex-col gap-1 rounded p-2">
-              <div className="flex flex-row items-center justify-between p-2">
-                <div className="font-semibold">
-                  <p>{doctor.experience} years</p>
-                  <p className="text-muted-foreground font-normal">
-                    Experience
-                  </p>
+              </CardHeader>
+              <CardContent className="bg-secondary m-2 flex flex-col gap-1 rounded p-2">
+                <div className="flex flex-row items-center justify-between p-2">
+                  <div className="font-semibold">
+                    <p>{doctor.experience} years</p>
+                    <p className="text-muted-foreground font-normal">
+                      Experience
+                    </p>
+                  </div>
+                  <Separator orientation="vertical" />
+                  <div>
+                    <p className="text-foreground text-xl font-bold">
+                      ${doctor.consultation_fees}
+                    </p>
+                    <p className="text-muted-foreground">Consultation fee</p>
+                  </div>
                 </div>
-                <Separator orientation="vertical" />
-                <div>
-                  <p className="text-foreground text-xl font-bold">
-                    ${doctor.consultation_fees}
-                  </p>
-                  <p className="text-muted-foreground">Consultation fee</p>
-                </div>
-              </div>
-              <DoctorDialog id={doctor.id} />
-            </CardContent>
-          </Card>
-        ))}
+                <DoctorDialog doctor={doctor} />
+              </CardContent>
+            </Card>
+          ) : (
+            ""
+          ),
+        )}
       </div>
     </section>
   );

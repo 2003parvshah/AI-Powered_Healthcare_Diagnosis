@@ -8,6 +8,8 @@ import { RootState } from "@/redux/store";
 import { DoctorPersonalInfo } from "@/interface/doctor/personalInfo";
 import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { medicalDegrees } from "@/config/medicalDegrees";
+import { specializations } from "@/config/specializations";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 export const DoctorProfile = () => {
   const token = useSelector((state: RootState) => state.auth.token);
@@ -106,44 +109,26 @@ export const DoctorProfile = () => {
           console.error("Error fetching fee details:", feeResponse.reason);
         }
       } catch (err) {
+        toast.error("Something wrong occured");
         console.error("Unexpected error fetching doctor details:", err);
       }
     };
 
     fetchDoctorDetails();
   }, [token]);
-  // Handle update API call
-  // const handleUpdateProfile = async () => {
-  //   console.log(editData);
-  //   try {
-  //     await axios.post(
-  //       `${import.meta.env.VITE_BASE_URL}/doctor/setDoctorPersonalInfo`,
-  //       editData,
-  //       {
-  //         headers: {
-  //           Accept: "application/json",
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       },
-  //     );
-
-  //     setPersonalInfo(editData as DoctorPersonalInfo);
-  //     setIsEditing(false);
-  //   } catch (err) {
-  //     console.error("Error updating profile:", err);
-  //   }
-  // };
   const handleUpdateProfile = async () => {
     setIsUploading(true);
     console.log(editData);
 
     try {
       const formData = new FormData();
-      formData.append("full_name", editData.full_name || "");
+      formData.append("name", editData.name || "");
       formData.append("date_of_birth", editData.date_of_birth || "");
       formData.append("gender", editData.gender || "");
       formData.append("nationality", editData.nationality || "");
       formData.append("languages_spoken", editData.languages_spoken || "");
+      formData.append("degree", editData.degree || "");
+      formData.append("specialization", editData.specialization || "");
 
       if (editData.profile_photo instanceof File) {
         formData.append("profile_photo", editData.profile_photo);
@@ -162,8 +147,10 @@ export const DoctorProfile = () => {
 
       if (response.status === 201) {
         setPersonalInfo(response.data.data);
+        toast.success("Update successfull");
       } else {
         console.error("Error updating profile:", response.statusText);
+        toast.error("Something wrong occured");
       }
     } catch (err) {
       console.error("Error updating profile:", err);
@@ -205,11 +192,14 @@ export const DoctorProfile = () => {
 
       if (response.status === 201) {
         setWorkInfo(response.data.data);
+        toast.success("Update successfull");
       } else {
         console.error("Error updating profile:", response.statusText);
+        toast.error("Something wrong occured");
       }
     } catch (err) {
       console.error("Error updating profile:", err);
+      toast.error("Something wrong occured");
     } finally {
       setIsUploading(false);
       setIsEditingWork(false);
@@ -240,15 +230,17 @@ export const DoctorProfile = () => {
           },
         },
       );
-      console.log(response);
+      // console.log(response);
 
       if (response.status === 201) {
         setFeeInfo(response.data.data);
+        toast.success("Update successfull");
       } else {
         console.error("Error updating profile:", response.statusText);
       }
     } catch (err) {
       console.error("Error updating profile:", err);
+      toast.error("Something wrong occured");
     } finally {
       setIsUploading(false);
       setIsEditingFees(false);
@@ -256,7 +248,7 @@ export const DoctorProfile = () => {
   };
 
   return (
-    <section className="flex max-w-7xl flex-col items-start justify-start space-y-6 p-4">
+    <section className="flex max-w-6xl flex-col items-start justify-start space-y-6 p-4">
       {/* Doctor Profile Header */}
       <div className="mb-6 flex items-center gap-4">
         <Avatar className="h-16 w-16">
@@ -274,7 +266,7 @@ export const DoctorProfile = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold">
-              {personalInfo?.full_name || "Doctor"}
+              {personalInfo?.name || "Doctor"}
             </h1>
             <Badge variant="outline" className="bg-green-100 text-emerald-700">
               DOCTOR
@@ -290,7 +282,7 @@ export const DoctorProfile = () => {
       </div>
 
       {/* Profile Information Cards */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <div className="grid w-full grid-cols-1 gap-6 md:grid-cols-2">
         {/* Personal Information */}
         <Card>
           <CardHeader>
@@ -305,7 +297,7 @@ export const DoctorProfile = () => {
                     <Pencil size={15} />
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[500px]">
+                <DialogContent className="h-11/12 overflow-auto">
                   <DialogHeader>
                     <DialogTitle>Edit Profile</DialogTitle>
                     <DialogDescription>
@@ -319,12 +311,12 @@ export const DoctorProfile = () => {
                       </Label>
                       <Input
                         id="name"
-                        value={editData.full_name || ""}
+                        value={editData.name || ""}
                         className="col-span-3"
                         onChange={(e) =>
                           setEditData({
                             ...editData,
-                            full_name: e.target.value,
+                            name: e.target.value,
                           })
                         }
                       />
@@ -384,6 +376,51 @@ export const DoctorProfile = () => {
                       />
                     </div>
                     <div>
+                      <Label htmlFor="degree_id">Degree</Label>
+                      <Select
+                        onValueChange={(value) =>
+                          setEditData({ ...editData, degree: value })
+                        }
+                        defaultValue={editData.degree}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Degree" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {medicalDegrees.map((degree) => (
+                            <SelectItem key={degree} value={degree}>
+                              {degree}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <div>
+                        <Label htmlFor="specialization">Specialization</Label>
+                        <Select
+                          onValueChange={(value) =>
+                            setEditData({ ...editData, specialization: value })
+                          }
+                          defaultValue={editData.specialization}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Specialization" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {specializations.map((specialization) => (
+                              <SelectItem
+                                key={specialization}
+                                value={specialization}
+                              >
+                                {specialization}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div>
                       <Label htmlFor="languages" className="text-right">
                         Languages
                       </Label>
@@ -436,6 +473,11 @@ export const DoctorProfile = () => {
             <InfoRow label="Gender" value={personalInfo?.gender} />
             <InfoRow label="Birthday" value={personalInfo?.date_of_birth} />
             <InfoRow label="Nationality" value={personalInfo?.nationality} />
+            <InfoRow label="Degree" value={personalInfo?.degree} />
+            <InfoRow
+              label="Specialization"
+              value={personalInfo?.specialization}
+            />
             <InfoRow
               label="Languages Spoken"
               value={personalInfo?.languages_spoken}

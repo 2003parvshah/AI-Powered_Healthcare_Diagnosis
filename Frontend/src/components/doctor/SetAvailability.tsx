@@ -5,6 +5,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import axios from "axios";
+import { SetHoliday } from "./SetHoliday";
+import { toast } from "sonner";
 
 interface TimeSlot {
   start: string;
@@ -184,7 +186,7 @@ export default function SetAvailability() {
       console.log(response);
 
       //   if (!response.status) throw new Error("Failed to save schedule");
-      alert("Schedule saved successfully!");
+      toast.success("Schedule saved successfully!");
     } catch (error) {
       console.error(error);
       alert("Error saving schedule");
@@ -192,86 +194,94 @@ export default function SetAvailability() {
   };
 
   return (
-    <div className="mx-auto rounded-xl border bg-white p-6 shadow-sm">
-      <div className="mb-6 flex justify-between">
-        <h2 className="text-xl font-semibold">Set Availability</h2>
-        <Button onClick={saveSchedule}>Save</Button>
-      </div>
+    <>
+      <div className="mx-auto rounded-xl border bg-white p-6 shadow-sm">
+        <div className="mb-6 flex justify-between">
+          <h2 className="text-xl font-semibold">Set Availability</h2>
+          <Button onClick={saveSchedule}>Save</Button>
+        </div>
 
-      <div className="space-y-4">
-        {Object.entries(schedule).map(([day, { enabled, slots }]) => (
-          <div key={day} className="flex items-center gap-4">
-            <div className="w-24">
-              <Checkbox
-                checked={enabled}
-                onCheckedChange={() => toggleDay(day)}
-                id={`day-${day}`}
-              />
-              <label
-                htmlFor={`day-${day}`}
-                className="ml-2 text-sm font-medium"
-              >
-                {day}
-              </label>
-            </div>
-            <div className="flex-1">
-              {!enabled ? (
-                <div className="text-sm text-gray-500">Unavailable</div>
-              ) : (
-                <div className="space-y-2">
-                  {slots.map((slot, index) => (
-                    <div
-                      key={index}
-                      className="flex flex-wrap items-center gap-2"
-                    >
-                      <input
-                        type="time"
-                        value={slot.start}
-                        onChange={(e) =>
-                          updateTimeSlot(day, index, "start", e.target.value)
-                        }
-                        className="rounded border px-2 py-1 text-sm"
-                      />
-                      <span>-</span>
-                      <input
-                        type="time"
-                        value={slot.end}
-                        onChange={(e) =>
-                          updateTimeSlot(day, index, "end", e.target.value)
-                        }
-                        className="rounded border px-2 py-1 text-sm"
-                      />
-                      <input
-                        type="text"
-                        value={slot.location}
-                        onChange={(e) =>
-                          updateTimeSlot(day, index, "location", e.target.value)
-                        }
-                        placeholder="Location"
-                        className="flex-grow rounded border px-2 py-1 text-sm"
-                      />
-                      <button
-                        onClick={() => removeTimeSlot(day, index)}
-                        className="text-gray-400 hover:text-gray-600"
+        <div className="space-y-4">
+          {Object.entries(schedule).map(([day, { enabled, slots }]) => (
+            <div key={day} className="flex items-center gap-4">
+              <div className="w-24">
+                <Checkbox
+                  checked={enabled}
+                  onCheckedChange={() => toggleDay(day)}
+                  id={`day-${day}`}
+                />
+                <label
+                  htmlFor={`day-${day}`}
+                  className="ml-2 text-sm font-medium"
+                >
+                  {day}
+                </label>
+              </div>
+              <div className="flex-1">
+                {!enabled ? (
+                  <div className="text-sm text-gray-500">Unavailable</div>
+                ) : (
+                  <div className="space-y-2">
+                    {slots.map((slot, index) => (
+                      <div
+                        key={index}
+                        className="flex flex-wrap items-center gap-2"
                       >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+                        <input
+                          type="time"
+                          value={slot.start}
+                          onChange={(e) =>
+                            updateTimeSlot(day, index, "start", e.target.value)
+                          }
+                          className="rounded border px-2 py-1 text-sm"
+                        />
+                        <span>-</span>
+                        <input
+                          type="time"
+                          value={slot.end}
+                          onChange={(e) =>
+                            updateTimeSlot(day, index, "end", e.target.value)
+                          }
+                          className="rounded border px-2 py-1 text-sm"
+                        />
+                        <input
+                          type="text"
+                          value={slot.location}
+                          onChange={(e) =>
+                            updateTimeSlot(
+                              day,
+                              index,
+                              "location",
+                              e.target.value,
+                            )
+                          }
+                          placeholder="Location"
+                          className="flex-grow rounded border px-2 py-1 text-sm"
+                        />
+                        <button
+                          onClick={() => removeTimeSlot(day, index)}
+                          className="text-gray-400 hover:text-gray-600"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => addTimeSlot(day)}
+                disabled={!enabled}
+              >
+                <Plus size={16} className="text-blue-600" />
+              </Button>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => addTimeSlot(day)}
-              disabled={!enabled}
-            >
-              <Plus size={16} className="text-blue-600" />
-            </Button>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+      <SetHoliday />
+    </>
   );
 }

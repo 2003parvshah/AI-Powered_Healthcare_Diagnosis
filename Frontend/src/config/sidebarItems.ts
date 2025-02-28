@@ -5,6 +5,7 @@ import {
   Activity,
   BriefcaseMedical,
   Clock,
+  User,
 } from "lucide-react";
 
 // Define the type for menu items
@@ -16,16 +17,18 @@ export interface SidebarItem {
 
 // Sidebar menu items array
 export const sidebarItems: SidebarItem[] = [
-  { title: "Home", url: "/patient", icon: Home },
-  { title: "Diagnose", url: "/patient/diagnose", icon: Activity },
+  // { title: "Home", url: "/patient", icon: Home },
+  { title: "Diagnose", url: "/patient", icon: Activity },
   {
     title: "Specialists",
     url: "/patient/specialist",
     icon: BriefcaseMedical,
   },
+  { title: "Profile", url: "/patient/profile", icon: User },
 ];
 export const doctorSidebarItems: SidebarItem[] = [
   { title: "Home", url: "/doctor", icon: Home },
   { title: "Appointments", url: "/doctor/appointments", icon: Activity },
   { title: "Set Availability", url: "/doctor/set-availability", icon: Clock },
+  { title: "Profile", url: "/doctor/profile", icon: User },
 ];

@@ -16,12 +16,21 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import axios from "axios";
 import DoctorAvailableTimee from "./DoctorAvailableTimee";
-const doctor = {
-  name: "Dr. John Doe",
-  specialty: "Cardiology",
-};
-
-export const DoctorDialog = ({ id }: { id: number }) => {
+import { toast } from "sonner";
+// const doctor = {
+//   name: "Dr. John Doe",
+//   specialty: "Cardiology",
+// };
+interface doctorInterface {
+  id: number;
+  name: string;
+  specialization: string;
+  consultation_fees: number;
+  experience: number;
+  profile_photo: string;
+  degree: string;
+}
+export const DoctorDialog = ({ doctor }: { doctor: doctorInterface }) => {
   const token = useSelector((state: RootState) => state.auth.token);
   const [confirmed, setConfirmed] = useState(false);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
@@ -33,12 +42,12 @@ export const DoctorDialog = ({ id }: { id: number }) => {
   };
   const handleBookAppointment = async () => {
     if (!selectedTimeSlot) {
-      alert("Please select an appointment time.");
+      toast("Please select an appointment time.");
       return;
     }
 
     const appointmentData = {
-      doctor_id: id,
+      doctor_id: doctor.id,
       health_issues_id: 1, // Replace with actual selected health issue ID
       appointment_date: selectedTimeSlot,
     };
@@ -51,10 +60,10 @@ export const DoctorDialog = ({ id }: { id: number }) => {
           headers: { Authorization: `Bearer ${token}` },
         },
       );
-      console.log(response);
+      // console.log(response);
 
       if (response.status === 201) {
-        alert("Appointment booked successfully!");
+        toast("Appointment booked successfully!");
         setOpen(false);
       } else {
         alert("Failed to book the appointment. Please try again.");
@@ -70,7 +79,7 @@ export const DoctorDialog = ({ id }: { id: number }) => {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/patient/getdoctors_timetable`,
-        { doctor_id: id },
+        { doctor_id: doctor.id, date: selectedTimeSlot },
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -95,9 +104,8 @@ export const DoctorDialog = ({ id }: { id: number }) => {
       </DialogTrigger>
       <DialogContent className="bg-secondary flex h-11/12 w-11/12 max-w-5xl flex-col justify-between overflow-y-scroll md:h-11/12 md:flex-row lg:w-4xl">
         <DialogHeader className="flex shrink-0 flex-col items-center justify-center gap-4 p-4">
-          {/* <div className=""> */}
           <img
-            src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            src={doctor.profile_photo}
             alt={doctor.name}
             className="aspect-square w-24 rounded-full object-cover"
           />
@@ -106,8 +114,8 @@ export const DoctorDialog = ({ id }: { id: number }) => {
               {doctor.name}
             </DialogTitle>
             <DialogDescription className="text-muted-foreground flex max-w-64 flex-col text-center">
-              <span>{doctor.specialty}</span>
-              <span>MBBS, BCS, MCPS (Gynae & Obs), MCRCG</span>
+              <span>{doctor.specialization}</span>
+              <span>{doctor.degree}</span>
             </DialogDescription>
           </div>
           <div className="flex flex-col gap-2">
@@ -120,7 +128,9 @@ export const DoctorDialog = ({ id }: { id: number }) => {
                   <p className="text-muted-foreground text-sm">
                     Total Experience
                   </p>
-                  <p className="text-lg font-semibold">12 years</p>
+                  <p className="text-lg font-semibold">
+                    {doctor.experience} years
+                  </p>
                 </div>
               </div>
               <Separator orientation="vertical" />
@@ -140,19 +150,19 @@ export const DoctorDialog = ({ id }: { id: number }) => {
               </div>
 
               <div className="">
-                <p className="text-lg font-semibold">$200</p>
+                <p className="text-lg font-semibold">
+                  {doctor.consultation_fees}
+                </p>
                 <p className="text-muted-foreground">Consultation</p>
               </div>
             </div>
           </div>
-          {/* </div> */}
         </DialogHeader>
         <div className="flex flex-col items-stretch gap-4">
           <div className="flex flex-col gap-2">
             <p className="text-muted-foreground">Select Date</p>
-            {/* <DoctorAvailableTime doctor_id={id} /> */}
             <DoctorAvailableTimee
-              id={id}
+              id={doctor.id}
               onTimeSlotSelect={handleTimeSlotSelection}
             />
             <div>

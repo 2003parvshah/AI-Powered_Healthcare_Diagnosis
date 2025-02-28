@@ -8,6 +8,7 @@ import { AppSidebar } from "@/components/sidebar/AppSidebar";
 import { Separator } from "@/components/ui/separator";
 import { Outlet } from "react-router";
 import { sidebarItems } from "@/config/sidebarItems";
+import { Toaster } from "@/components/ui/sonner";
 
 export const Dashboard = () => {
   const location = useLocation();
@@ -30,6 +31,7 @@ export const Dashboard = () => {
         </header>
         <main className="mt-4">
           <Outlet />
+          <Toaster theme="light" richColors />
         </main>
       </SidebarInset>
     </SidebarProvider>

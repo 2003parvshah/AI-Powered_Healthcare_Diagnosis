@@ -10,6 +10,8 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { specializations } from "@/config/specializations";
+import { medicalDegrees } from "@/config/medicalDegrees";
 import { NavLink, useNavigate } from "react-router";
 import { useDispatch } from "react-redux";
 import { login } from "@/redux/authSlice";
@@ -25,38 +27,16 @@ interface FormData {
   name: string;
   email: string;
   phone_number: string;
-  degree_id: number;
-  specialization_id: number;
+  degree: string;
+  date_of_birth: string;
+  gender: string;
+  specialization: string;
   license_number: string;
   bio: string;
   role: string;
   password: string;
   password_confirmation: string;
 }
-const specializations = [
-  "Cardiology",
-  "Dermatology",
-  "Neurology",
-  "Pediatrics",
-  "Orthopedics",
-  "Gynecology",
-  "Oncology",
-  "Psychiatry",
-  "Ophthalmology",
-  "ENT",
-  "Endocrinology",
-  "Gastroenterology",
-  "Nephrology",
-  "Pulmonology",
-  "Urology",
-  "Rheumatology",
-  "Hematology",
-  "Anesthesiology",
-  "Radiology",
-  "Pathology",
-  "General Surgery",
-  "Plastic Surgery",
-].map((label, index) => ({ label, value: index }));
 
 export function DoctorRegisterForm({
   className,
@@ -67,9 +47,11 @@ export function DoctorRegisterForm({
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
+    gender: "",
+    date_of_birth: "",
     phone_number: "",
-    degree_id: 1,
-    specialization_id: 0,
+    degree: "",
+    specialization: "",
     license_number: "",
     bio: "",
     role: "doctor",
@@ -85,9 +67,9 @@ export function DoctorRegisterForm({
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
-  const handleSpecializationChange = (value: string) => {
-    setFormData({ ...formData, specialization_id: parseInt(value, 10) });
-  };
+  // const handleSpecializationChange = (value: string) => {
+  //   setFormData({ ...formData, specialization_id: parseInt(value, 10) });
+  // };
   // const handleSelectChange = (value: string) => {
   //   setFormData({ ...formData, gender: value });
   // };
@@ -103,6 +85,7 @@ export function DoctorRegisterForm({
     setLoading(true);
     try {
       console.log(formData);
+      //TODO change to axios
       const response = await fetch(
         `${import.meta.env.VITE_BASE_URL}/register`,
         {
@@ -182,9 +165,13 @@ export function DoctorRegisterForm({
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                {/* <div>
+                <div>
                   <Label htmlFor="gender">Gender</Label>
-                  <Select onValueChange={handleSelectChange}>
+                  <Select
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, gender: value })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Male" />
                     </SelectTrigger>
@@ -193,7 +180,21 @@ export function DoctorRegisterForm({
                       <SelectItem value="female">Female</SelectItem>
                     </SelectContent>
                   </Select>
-                </div> */}
+                </div>
+                <div>
+                  <Label htmlFor="date_of_birth">Date of Birth</Label>
+                  <Input
+                    id="date_of_birth"
+                    type="date"
+                    placeholder="987453210"
+                    required
+                    value={formData.date_of_birth}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {/*  */}
                 <div>
                   <Label htmlFor="license_number">License Number</Label>
                   <Input
@@ -206,31 +207,40 @@ export function DoctorRegisterForm({
                   />
                 </div>
                 <div>
-                  <Label htmlFor="degree_id">Degree Id</Label>
-                  <Input
-                    id="degree_id"
-                    type="number"
-                    placeholder="9999"
-                    required
-                    value={formData.degree_id}
-                    onChange={handleChange}
-                  />
+                  <Label htmlFor="degree_id">Degree</Label>
+                  <Select
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, degree: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Degree" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {medicalDegrees.map((degree) => (
+                        <SelectItem key={degree} value={degree}>
+                          {degree}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="grid gap-2">
                 <div>
-                  <Label htmlFor="specialization_id">Specialization</Label>
+                  <Label htmlFor="specialization">Specialization</Label>
                   <Select
-                    onValueChange={handleSpecializationChange}
-                    value={String(formData.specialization_id)}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, specialization: value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Specialization" />
                     </SelectTrigger>
                     <SelectContent>
-                      {specializations.map(({ label, value }) => (
-                        <SelectItem key={value} value={String(value)}>
-                          {label}
+                      {specializations.map((specialization) => (
+                        <SelectItem key={specialization} value={specialization}>
+                          {specialization}
                         </SelectItem>
                       ))}
                     </SelectContent>

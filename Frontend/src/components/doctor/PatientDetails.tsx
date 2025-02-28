@@ -17,7 +17,7 @@ interface HealthIssue {
 
 interface Patient {
   name: string;
-  dob: string;
+  date_of_birth: string;
   gender: string;
   address: string;
   profile_photo: string;
@@ -26,8 +26,8 @@ interface Patient {
   blood_pressure: string;
   weight: string;
   blood_group: string;
-  medicalHistory: string;
-  healthIssues: HealthIssue[];
+  medical_history: string;
+  health_issues: HealthIssue[];
 }
 
 export const PatientDetails = ({
@@ -46,7 +46,9 @@ export const PatientDetails = ({
           { id: event.id },
           { headers: { Authorization: `Bearer ${token}` } },
         );
-        setPatient(response.data);
+        console.log(response);
+
+        setPatient(response.data.patient);
       } catch (error) {
         console.log(error);
       }
@@ -84,13 +86,13 @@ export const PatientDetails = ({
           <div>
             <ul className="mt-5 flex flex-col gap-3 text-sm font-semibold [&_span]:font-normal">
               <li>
-                DOB: <span>{patient.dob}</span>
+                DOB: <span>{patient.date_of_birth}</span>
               </li>
               <li>
                 Gender: <span>{patient.gender}</span>
               </li>
               <li>
-                Medical History: <span>{patient.medicalHistory}</span>
+                Medical History: <span>{patient.medical_history}</span>
               </li>
               <li>
                 Address: <span>{patient.address}</span>
@@ -105,40 +107,44 @@ export const PatientDetails = ({
           </div>
         </CardHeader>
       </Card>
+      {patient.health_issues && (
+        <>
+          <p className="text-lg font-semibold">Ai Generated Diagnoses</p>
+          <Card>
+            <CardHeader>
+              <CardTitle>Health Issues</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              {patient.health_issues.map((issue, idx) => (
+                <div key={idx} className="border-b pb-2 last:border-0">
+                  <p className="font-medium text-blue-600">{issue.diagnosis}</p>
+                  <p className="text-sm text-gray-500">
+                    Symptoms: {issue.symptoms}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Solution: {issue.solution}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Doctor Type: {issue.doctorType}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Other Info: {issue.otherInfo}
+                  </p>
+                  <div>
+                    <Button variant="ghost" size="sm">
+                      <File /> PDF
+                    </Button>
+                    <Button variant="ghost" size="sm">
+                      <FileImage /> Image
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </>
+      )}
 
-      <p className="text-lg font-semibold">Ai Generated Diagnoses</p>
-      <Card>
-        <CardHeader>
-          <CardTitle>Health Issues</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          {patient.healthIssues.map((issue, idx) => (
-            <div key={idx} className="border-b pb-2 last:border-0">
-              <p className="font-medium text-blue-600">{issue.diagnosis}</p>
-              <p className="text-sm text-gray-500">
-                Symptoms: {issue.symptoms}
-              </p>
-              <p className="text-sm text-gray-500">
-                Solution: {issue.solution}
-              </p>
-              <p className="text-sm text-gray-500">
-                Doctor Type: {issue.doctorType}
-              </p>
-              <p className="text-sm text-gray-500">
-                Other Info: {issue.otherInfo}
-              </p>
-              <div>
-                <Button variant="ghost" size="sm">
-                  <File /> PDF
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <FileImage /> Image
-                </Button>
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
       <Button>Reschedule</Button>
     </div>
   );

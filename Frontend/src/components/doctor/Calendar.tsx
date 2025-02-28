@@ -234,7 +234,7 @@ const EventGroup = ({
                   {event.title}
                 </Button>
               </SheetTrigger>
-              <SheetContent className="overflow-y-auto">
+              <SheetContent className="w-4/12 overflow-y-auto sm:max-w-auto">
                 <SheetHeader>
                   <SheetTitle></SheetTitle>
                   <SheetDescription className="text-foreground"></SheetDescription>
@@ -724,7 +724,7 @@ const TimeTable = () => {
       {Array.from(Array(25).keys()).map((hour) => {
         return (
           <div
-            className="text-muted-foreground/50 relative h-20 text-right text-xs last:h-0"
+            className="text-muted-foreground/50 relative z-50 h-20 text-right text-xs last:h-0"
             key={hour}
           >
             {now.getHours() === hour && (

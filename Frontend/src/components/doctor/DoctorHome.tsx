@@ -1,3 +1,8 @@
 export const DoctorHome = () => {
-  return <div className="text-primary text-2xl font-black">Doctor Home</div>;
+  return (
+    <div className="">
+      Looks like you have not completed your profile setup. Complete it in the
+      profile section
+    </div>
+  );
 };

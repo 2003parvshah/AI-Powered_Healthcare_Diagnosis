@@ -3,34 +3,61 @@ import { Button } from "@/components/ui/button";
 import { Send, ScanHeart, Paperclip, FileImage } from "lucide-react";
 // import { Input } from "@/components/ui/input";
 
+import { motion } from "framer-motion";
 export const Diagnose = () => {
   const [message, setMessage] = useState("");
   const prompts = ["Running nose", "Fever with headache", "Red eyes"];
 
   return (
-    <div className="flex h-[80vh] flex-col items-center justify-center p-6 text-center">
+    <motion.div
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="flex h-[80vh] flex-col items-center justify-center p-6 text-center"
+    >
       {/* Icon */}
-      <div className="rounded-full bg-gray-200 p-4">
-        <ScanHeart size={32} className="text-gray-700" />
+      <div className="bg-primary rounded-full p-4">
+        <ScanHeart size={32} className="text-white" />
       </div>
 
       {/* Header Section */}
-      <h1 className="mt-4 text-2xl font-bold">How do you feel Today?</h1>
-      <p className="mt-2 text-gray-500">
+      <h1 className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-3xl font-bold text-transparent">
+        How do you feel Today?
+      </h1>
+      <motion.p
+        initial={{ y: 10, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="mt-2 text-gray-500"
+      >
         Tell me you symptoms to get AI generated Diagnoses
-      </p>
+      </motion.p>
 
       {/* Prompt Buttons */}
-      <div className="mt-6 flex w-4xl flex-wrap items-center justify-center gap-3">
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+        className="mt-6 flex w-4xl flex-wrap items-center justify-center gap-3"
+      >
         {prompts.map((prompt, index) => (
-          <Button key={index} variant="outline" className="px-4 py-2">
+          <Button
+            key={index}
+            variant="outline"
+            className="cursor-pointer rounded-full px-4 py-2 text-sm font-medium transition-all"
+          >
             {prompt}
           </Button>
         ))}
-      </div>
+      </motion.div>
 
       {/* Input Box */}
-      <div className="mt-6 flex w-full max-w-2xl flex-col rounded-lg border border-gray-300 bg-white p-4 shadow-md">
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.6 }}
+        className="mt-6 flex w-full max-w-2xl flex-col rounded-lg border border-gray-300 bg-white shadow-md"
+      >
         {/* <Input
           placeholder="What are the best open opportunities by company size?"
           className="flex items-center gap-2 border-0 text-gray-600 shadow-none focus:ring-0 focus-visible:ring-0"
@@ -45,7 +72,7 @@ export const Diagnose = () => {
         />
 
         {/* Dropdown & Send Button */}
-        <div className="mt-12 flex items-center justify-between">
+        <div className="mt-12 flex items-center justify-between border-t border-t-blue-100 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 p-3">
           {/* <Button variant="outline" className="flex items-center gap-2">
             Salesforce <ChevronDown size={16} />
           </Button> */}
@@ -64,7 +91,7 @@ export const Diagnose = () => {
             </Button>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
