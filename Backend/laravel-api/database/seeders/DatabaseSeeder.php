@@ -18,28 +18,28 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         // Create Specializations and Degrees first (they are required for doctors)
-        $specializations = Specialization::factory(5)->create();
-        $degrees = MedicalDegree::factory(5)->create();
+        // $specializations = Specialization::factory(5)->create();
+        // $degrees = MedicalDegree::factory(5)->create();
 
         // Create Users
-        User::factory(20)->create();
+        // User::factory(20)->create();
 
         // Create Doctors (each doctor will need a specialization and degree)
-        Doctor::factory(10)->create([
-            'specialization_id' => $specializations->random()->id,
-            'degree_id' => $degrees->random()->id,
-        ]);
+        // Doctor::factory(10)->create([
+        // 'specialization' => $specializations->random()->id,
+        // 'degree' => $degrees->random()->id,
+        // ]);
 
         // Create Patients
-        Patient::factory(20)->create();
+        // Patient::factory(20)->create();
 
         // Create Appointments
-        Appointment::factory(30)->create();
+        // Appointment::factory(30)->create();
 
         // Create Feedback for Appointments
-        AppointmentFeedback::factory(30)->create();
+        // AppointmentFeedback::factory(30)->create();
 
         // Create Health Issues
-        HealthIssue::factory(30)->create();
+        // HealthIssue::factory(30)->create();
     }
 }

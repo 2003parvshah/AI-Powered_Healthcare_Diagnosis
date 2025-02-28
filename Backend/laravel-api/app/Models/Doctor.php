@@ -11,9 +11,9 @@ class Doctor extends Model
 
     protected $fillable = [
         'id',
-        'name',
-        'specialization_id',
-        'degree_id',
+        // 'name',
+        'specialization',
+        'degree',
         'license_number',
     ];
 
@@ -22,15 +22,15 @@ class Doctor extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function specialization()
-    {
-        return $this->belongsTo(Specialization::class);
-    }
+    // public function specialization()
+    // {
+    //     return $this->belongsTo(Specialization::class);
+    // }
 
-    public function degree()
-    {
-        return $this->belongsTo(MedicalDegree::class);
-    }
+    // public function degree()
+    // {
+    //     return $this->belongsTo(MedicalDegree::class);
+    // }
 
     public function personalInfo()
     {

@@ -13,6 +13,7 @@ use App\Models\DoctorAvailability;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\DTOs\DoctorScheduleDTO;
+use App\Models\DoctorHoliday;
 // use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -74,28 +75,46 @@ class HealthIssueController extends Controller
         $requestedDate = Carbon::parse($request->date);
         $weekDayName = $requestedDate->format('l'); // Get the full weekday name (e.g., Monday, Tuesday)
 
-        // Fetch all doctor schedules
-        // $doctorSchedules = DoctorAvailability::where('doctor_availability.doctor_id', '=', $request->doctor_id)
-        //     ->join('doctor_timeTable as tt', 'doctor_availability.doctor_id', '=', 'tt.doctor_id')
-        //     ->leftJoin('appointments as ap', 'doctor_availability.doctor_id', '=', 'ap.doctor_id') // Changed to LEFT JOIN
-        //     ->select([
-        //         'doctor_availability.doctor_id',
-        //         'doctor_availability.time_of_one_appointment',
-        //         'tt.start_time',
-        //         'tt.end_time',
-        //         'tt.address',
-        //         'tt.timezone',
-        //         'ap.appointment_date'
-        //     ])
-        //     ->get();
 
-        $doctorSchedules = DoctorAvailability::where('doctor_availability.doctor_id', '=', $request->doctor_id)
-            ->join('doctor_timeTable as tt', function ($join) use ($weekDayName) {
-                $join->on('doctor_availability.doctor_id', '=', 'tt.doctor_id')
-                    ->where('tt.day', '=', $weekDayName); // Filter by weekday
+        $targetDate = $request->date;
+        $doctorHolidays = DoctorHoliday::whereDate('start_date', '<=', $targetDate)
+            ->whereDate('end_date', '>=', $targetDate)
+            ->where('doctor_id', '=', $request->doctor_id)
+            ->get(['id', 'doctor_id', 'start_date', 'end_date', 'byDoctor', 'timezone', 'created_at', 'updated_at'])
+            ->map(function ($holiday) use ($targetDate) {
+                return [
+                    // 'id' => $holiday->id,
+                    // 'doctor_id' => $holiday->doctor_id,
+                    'start_date' => $holiday->start_date,
+                    'end_date' => $holiday->end_date,
+                    // 'byDoctor' => $holiday->byDoctor,
+                    // 'timezone' => $holiday->timezone,
+                    // 'created_at' => $holiday->created_at,
+                    // 'updated_at' => $holiday->updated_at,
+
+                    'start_time' => ($targetDate == Carbon::parse($holiday->start_date)->format('Y-m-d'))
+                        ? Carbon::parse($holiday->start_date)->format('H:i:s')
+                        : '00:00:00', // Default to start of the day
+
+                    'end_time' => ($targetDate == Carbon::parse($holiday->end_date)->format('Y-m-d'))
+                        ? Carbon::parse($holiday->end_date)->format('H:i:s')
+                        : '23:59:59', // Default to end of the day
+
+                    'full_day' => (Carbon::parse($holiday->start_date)->format('Y-m-d') < $targetDate &&
+                        Carbon::parse($holiday->end_date)->format('Y-m-d') > $targetDate),
+
+                ];
+            });
+
+
+        $doctorSchedules = DoctorAvailability::join('doctor_timeTable as tt', 'doctor_availability.doctor_id', '=', 'tt.doctor_id')
+            ->leftJoin('appointments as ap', function ($join) use ($request) {
+                $join->on('doctor_availability.doctor_id', '=', 'ap.doctor_id')
+                    ->where('ap.appointment_date', '=', $request->date); // Apply condition inside LEFT JOIN
             })
-            ->leftJoin('appointments as ap', 'doctor_availability.doctor_id', '=', 'ap.doctor_id')
-            ->select([
+            ->where('doctor_availability.doctor_id', '=', $request->doctor_id)
+            ->where('tt.day', '=', $weekDayName) // Apply weekday filter separately
+            ->select(
                 'doctor_availability.doctor_id',
                 'doctor_availability.time_of_one_appointment',
                 'tt.start_time',
@@ -104,8 +123,10 @@ class HealthIssueController extends Controller
                 'tt.timezone',
                 'tt.day',
                 'ap.appointment_date'
-            ])
+            )
             ->get();
+
+
 
 
         // Prepare schedule data    
@@ -129,7 +150,53 @@ class HealthIssueController extends Controller
 
             while ($currentSlot->copy()->addMinutes($intervalMinutes)->lte($endTimeUTC)) {
                 // Check if the slot matches an appointment
+                // $currentSlot = $currentSlot->format('H:i:s');
+
                 $isAvailable = $currentSlot->toDateTimeString() !== $scheduleData->appointment_date;
+
+
+
+
+
+                // Check if the doctor is on holiday during this slot
+                $doctorOnHoliday = false;
+                $doctorHolidayMessage = null;
+                $slotTime = Carbon::parse($currentSlot)->format('H:i:s');
+
+                foreach ($doctorHolidays as $holiday) {
+                    // if ($slottime >= $holiday['start_time']) {
+                    //     $doctorOnHoliday = true;
+                    //     break; // Exit loop as soon as we find a matching holiday
+                    //     // $isAvailable = false;
+                    //     // $doctorHolidayMessage = "Doctor is on holiday during this time.";
+                    // }
+                    // if ($slottime <= $holiday['end_time']) {
+                    //     $doctorOnHoliday = true;
+                    //     break; // Exit loop as soon as we find a matching holiday
+                    //     // $isAvailable = false;
+                    //     // $doctorHolidayMessage = "Doctor is on holiday during this time.";    
+                    // }
+                    if ($slotTime >= $holiday['start_time'] && $slotTime <= $holiday['end_time']) {
+                        $doctorOnHoliday = true;
+                        $doctorHolidayMessage = "Doctor is on holiday during this time.";
+                        break; // Exit loop early if doctor is on holiday
+                    }
+                }
+
+                // If doctor is on holiday for this slot, set value0s accordingly
+                if ($doctorOnHoliday) {
+                    $isAvailable = false;
+                    $doctorHolidayMessage = "Doctor is on holiday during this time.";
+                } else {
+                    $isAvailable = true; // Ensure this is explicitly set if doctor is available
+                    $doctorHolidayMessage = null;
+                }
+
+
+
+
+
+
                 // dd($currentSlot->toDateTimeString());  // Print Query in Console
                 // Log::info('start time', $currentSlot->toDateTimeString());
                 Log::info('Start Time', ['time' => $currentSlot->toDateTimeString(), 'appointment time' => $scheduleData->appointment_date]);
@@ -140,10 +207,20 @@ class HealthIssueController extends Controller
                     $currentSlot->toDateTimeString(),
                     $isAvailable,
                     $scheduleData->address,
-                    $scheduleData->timezone
+                    $scheduleData->timezone,
                 );
 
-                $schedule[] = $scheduleDTO->toArray();
+                // $schedule[] = $scheduleDTO->toArray();
+                $slotData = $scheduleDTO->toArray();
+                if ($doctorHolidays) {
+                    $slotData['doctorHolidayMessage'] = $doctorHolidayMessage;
+                    $slotData['holiday_start_time'] = $holiday['start_time'];
+                    $slotData['holiday_end_time'] = $holiday['end_time'];
+                    // $slotData['currentslot'] = $currentSlot;
+                }
+
+
+                $schedule[] = $slotData;
 
                 // Move to the next slot
                 $currentSlot->addMinutes($intervalMinutes);
@@ -151,6 +228,7 @@ class HealthIssueController extends Controller
         }
 
         return response()->json(['schedule' => $schedule]);
+        // return response()->json(['schedule' => $doctorHolidays]);
     }
 
     /**

@@ -7,31 +7,49 @@ use App\Models\Appointment;
 use Carbon\Carbon;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\DTOs\AppointmentsDTO;
+use Illuminate\Support\Facades\DB;
+
+use function Laravel\Prompts\select;
 
 class AppointmentController extends Controller
 {
-
 
     public function getAppointments()
     {
         try {
             // Get authenticated doctor
-            $doctor = JWTAuth::parseToken()->authenticate();
+            $user = JWTAuth::parseToken()->authenticate();
 
-            // Fetch appointments for this doctor
-            // $appointments = Appointment::join('patients as p', 'appointments.patient_id', '=', 'p.id')
-            //     ->join()
-            //     ->where('appointments.doctor_id', $doctor->id) // Get doctor_id from auth
-            //     ->orderBy('appointments.health_issues_id', 'desc')
-            //     ->select('appointments.*', 'p.*') // Select appointment and patient details
-            //     ->get();
-            $appointments = Appointment::join('users as p', 'appointments.patient_id', '=', 'p.id')
-                ->leftJoin('health_issues as hi', 'p.id', '=', 'hi.patient_id') // Left Join with health_issues
-                ->where('appointments.doctor_id', $doctor->id) // Get doctor_id from authenticated doctor
-                ->orderBy('appointments.health_issues_id', 'desc')
-                ->select('appointments.id', 'appointments.appointment_date', 'p.name', 'hi.diagnosis') // Select appointment, patient, and health issue details
-                ->get();
+            if ($user->role == "patient") {
+                // ->where('u.id', $user->id)
+            }
+            if ($user->role == "doctor") {
+                // ->where('appointments.doctor_id', $user->id)
 
+            }
+
+            $appointments = Appointment::join('health_issues as hi', 'appointments.health_issues_id', '=', 'hi.id')
+                ->join('users as u', 'hi.patient_id', '=', 'u.id')
+                ->select(
+                    'appointments.id as appointment_id',
+                    'appointments.appointment_date',
+                    'u.name as patient_name',
+                    'hi.diagnosis',
+                    'u.id',
+                    'appointments.doctor_id',
+
+                )
+                ->orderBy('appointments.health_issues_id', 'desc');
+
+            // Apply filters based on user role
+            if ($user->role == "patient") {
+                $appointments->where('u.id', $user->id); // Get appointments for the logged-in patient
+            } elseif ($user->role == "doctor") {
+                $appointments->where('appointments.doctor_id', $user->id); // Get appointments for the doctor
+            }
+
+            // Execute query
+            $appointments = $appointments->get();
 
             // Transform each appointment into a DTO
             // $appointmentDTOs = $appointments->map(function ($appointment) {
@@ -43,10 +61,9 @@ class AppointmentController extends Controller
                 'appointments' => $appointments
             ], 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to fetch appointments'], 500);
+            return response()->json(['error' => $e], 500);
         }
     }
-
 
     // Store a new appointment
     public function setAppointment(Request $request)

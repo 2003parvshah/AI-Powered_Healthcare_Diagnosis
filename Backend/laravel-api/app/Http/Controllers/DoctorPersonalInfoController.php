@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\DoctorPersonalInfo;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\helper\cloudinaryClass; // Import the Cloudinary Helper
+use App\Models\Doctor;
+use App\Models\User;
 
 class DoctorPersonalInfoController extends Controller
 {
@@ -13,40 +15,96 @@ class DoctorPersonalInfoController extends Controller
     public function setDoctorPersonalInfo(Request $request)
     {
         // Validate incoming data
-        $request->validate([
-            'full_name' => 'required|string|max:255',
-            'date_of_birth' => 'required|date',
-            'gender' => 'required|in:male,female,other',
-            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Image validation
-            'nationality' => 'required|string|max:100',
-            'languages_spoken' => 'required|string',
-        ]);
+        // $request->validate([
+        //     'name' => 'required|string|max:255',
+        //     'date_of_birth' => 'required|date',
+        //     'gender' => 'required|in:male,female,other',
+        //     'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Image validation
+        //     'nationality' => 'required|string|max:100',
+        //     'languages_spoken' => 'required|string',
+        // ]);
 
         // Authenticate user
         $user = JWTAuth::parseToken()->authenticate();
+        $doctor = Doctor::where('id', $user->id)->first();
+        $user = User::where('id', $user->id)->first();
+        if ($request->has('name')) {
+            $user->name = $request->name;
+        }
+        if ($request->has('phone_number')) {
+            $user->phone_number = $request->phone_number;
+        }
+        $user->save(); // Save user updatesif ($request->hasFile('profile_photo')) {
+        // $image = $request->file('profile_photo');
 
-        // Handle image upload if provided
-        if ($request->hasFile('profile_photo')) {
-            $uploadData = cloudinaryClass::uploadimg($request->file('profile_photo'));
-            $profilePhotoUrl = $uploadData->original['url'] ?? null;
+
+
+        if ($request->has('specialization')) {
+            $doctor->specialization = $request->specialization;
+        }
+        if ($request->has('degree')) {
+            $doctor->degree = $request->degree;
+        }
+        if ($request->has('medical_history')) {
+            $doctor->license_number = $request->license_number;
         }
 
+        $doctor->save(); // Save patient updates
+
         // Create or update personal info record
+        if ($request->hasFile('profile_photo')) {
+            $image = $request->file('profile_photo');
+
+            // Upload to Cloudinary
+            $uploadResponse = cloudinaryClass::uploadimg($image);
+            $uploadData = json_decode($uploadResponse->getContent(), true);
+
+            // if (isset($uploadData['url'])) {
+            //     $doctor->profile_photo = $uploadData['url'];
+            // }
+        }
+
         $personalInfo = DoctorPersonalInfo::updateOrCreate(
             ['doctor_id' => $user->id], // Find by doctor_id
             [
-                'full_name' => $request->full_name,
+                // 'full_name' => $request->full_name,
                 'date_of_birth' => $request->date_of_birth,
                 'gender' => $request->gender,
-                'profile_photo' => $profilePhotoUrl ?? null, // Store image URL
+                'profile_photo' => $uploadData['url'] ?? null, // Store image URL
                 'nationality' => $request->nationality,
                 'languages_spoken' => $request->languages_spoken,
             ]
         );
 
+        // return response()->json([
+        //     'message' => 'Doctor personal info updated successfully!',
+        //     'data' => $personalInfo,
+        //     'user' => $user,
+        //     'doctor' => $doctor,
+        // ], 201);
+
+
         return response()->json([
             'message' => 'Doctor personal info updated successfully!',
-            'data' => $personalInfo,
+            'data' => [
+                'id' => $personalInfo->id,
+                'doctor_id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone_number' => $user->phone_number,
+                'role' => $user->role,
+                // 'otp' => $user->otp,
+                'date_of_birth' => $personalInfo->date_of_birth,
+                'gender' => $personalInfo->gender,
+                'profile_photo' => $personalInfo->profile_photo,
+                'nationality' => $personalInfo->nationality,
+                'languages_spoken' => $personalInfo->languages_spoken,
+                'specialization' => $doctor->specialization,
+                'degree' => $doctor->degree,
+                'license_number' => $doctor->license_number,
+                // 'created_at' => $doctor->created_at,
+                // 'updated_at' => $personalInfo->updated_at
+            ]
         ], 201);
     }
 
@@ -55,7 +113,8 @@ class DoctorPersonalInfoController extends Controller
     {
         // Authenticate user
         $user = JWTAuth::parseToken()->authenticate();
-
+        $doctor = Doctor::where('id', $user->id)->first();
+        $user = User::where('id', $user->id)->first();
         // Retrieve personal info for the doctor
         $personalInfo = DoctorPersonalInfo::where('doctor_id', $user->id)->first();
 
@@ -63,6 +122,29 @@ class DoctorPersonalInfoController extends Controller
             return response()->json(['message' => 'No personal info found for this doctor'], 404);
         }
 
-        return response()->json(['data' => $personalInfo], 200);
+        // return response()->json(['data' => $personalInfo], 200);
+
+        return response()->json([
+            'message' => 'Doctor personal info updated successfully!',
+            'data' => [
+                'id' => $personalInfo->id,
+                'doctor_id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone_number' => $user->phone_number,
+                'role' => $user->role,
+                'otp' => $user->otp,
+                'date_of_birth' => $personalInfo->date_of_birth,
+                'gender' => $personalInfo->gender,
+                'profile_photo' => $personalInfo->profile_photo,
+                'nationality' => $personalInfo->nationality,
+                'languages_spoken' => $personalInfo->languages_spoken,
+                'specialization' => $doctor->specialization,
+                'degree' => $doctor->degree,
+                'license_number' => $doctor->license_number,
+                'created_at' => $doctor->created_at,
+                'updated_at' => $personalInfo->updated_at
+            ]
+        ], 201);
     }
 }

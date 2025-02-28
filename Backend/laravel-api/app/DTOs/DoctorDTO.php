@@ -6,7 +6,7 @@ class DoctorDTO
 {
     public $id;
     public $doctor_id;
-    public $full_name;
+    public $name;
     public $date_of_birth;
     public $gender;
     public $profile_photo;
@@ -46,7 +46,7 @@ class DoctorDTO
     {
         $this->id = $data->id;
         $this->doctor_id = $data->doctor_id;
-        $this->full_name = $data->full_name;
+        $this->name = $data->name;
         $this->date_of_birth = $data->date_of_birth;
         $this->gender = $data->gender;
         $this->profile_photo = $data->profile_photo;
