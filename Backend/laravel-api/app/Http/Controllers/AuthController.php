@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\RegisterUserRequest;   // validations file for register 
 use App\Http\Requests\LoginUserRequest;   // validations file fo login
+use App\Models\DoctorPersonalInfo;
+
 class AuthController extends Controller
 {
 
@@ -41,9 +43,12 @@ class AuthController extends Controller
         if ($request->role === 'doctor') {
             Doctor::create([
                 'id' => $user->id,
-                'specialization_id' => $request->specialization_id,
-                'degree_id' => $request->degree_id,
+                'specialization' => $request->specialization,
+                'degree' => $request->degree,
                 'license_number' => $request->license_number,
+            ]);
+            DoctorPersonalInfo::create([
+                'doctor_id' => $user->id,
             ]);
         } elseif ($request->role === 'patient') {
             Patient::create([

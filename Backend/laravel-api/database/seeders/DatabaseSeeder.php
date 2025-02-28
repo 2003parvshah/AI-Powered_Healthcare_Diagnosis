@@ -26,8 +26,8 @@ class DatabaseSeeder extends Seeder
 
         // Create Doctors (each doctor will need a specialization and degree)
         // Doctor::factory(10)->create([
-        // 'specialization_id' => $specializations->random()->id,
-        // 'degree_id' => $degrees->random()->id,
+        // 'specialization' => $specializations->random()->id,
+        // 'degree' => $degrees->random()->id,
         // ]);
 
         // Create Patients

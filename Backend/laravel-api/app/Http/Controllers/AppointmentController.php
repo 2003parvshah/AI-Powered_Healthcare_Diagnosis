@@ -27,20 +27,6 @@ class AppointmentController extends Controller
                 // ->where('appointments.doctor_id', $user->id)
 
             }
-            // $appointments = Appointment::join('health_issues as hi', 'appointments.health_issues_id', '=', 'hi.id')
-            //     ->join('users as u', 'hi.patient_id', '=', 'u.id')
-            //     ->where('appointments.doctor_id', $user->id)
-            //     // ->where('u.id', $user->id)
-            //     ->orderBy('appointments.health_issues_id', 'desc')
-            //     ->select(
-            //         'appointments.id as appointment_id',
-            //         'appointments.appointment_date',
-            //         'u.name as patient_name',
-            //         'hi.diagnosis',
-            //         'u.id'
-            //     )
-            //     ->get();
-
 
             $appointments = Appointment::join('health_issues as hi', 'appointments.health_issues_id', '=', 'hi.id')
                 ->join('users as u', 'hi.patient_id', '=', 'u.id')
@@ -50,6 +36,7 @@ class AppointmentController extends Controller
                     'u.name as patient_name',
                     'hi.diagnosis',
                     'u.id',
+                    'appointments.doctor_id',
 
                 )
                 ->orderBy('appointments.health_issues_id', 'desc');
@@ -74,7 +61,7 @@ class AppointmentController extends Controller
                 'appointments' => $appointments
             ], 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to fetch appointments'], 500);
+            return response()->json(['error' => $e], 500);
         }
     }
 

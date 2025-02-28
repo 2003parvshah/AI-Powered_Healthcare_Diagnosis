@@ -4,12 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Specialization extends Model
-{
-    protected $fillable = ['name'];
+// class Specialization extends Model
+// {
+//     protected $fillable = ['name'];
 
-    public function doctors()
-    {
-        return $this->hasMany(Doctor::class);
-    }
-}
+//     public function doctors()
+//     {
+//         return $this->hasMany(Doctor::class);
+//     }
+// }

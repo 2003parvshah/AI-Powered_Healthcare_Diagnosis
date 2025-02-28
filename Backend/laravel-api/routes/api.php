@@ -14,6 +14,7 @@ use App\Http\Controllers\DoctorWorkExperienceController;
 use App\Http\Controllers\DoctorDetailsController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\Doctor_timeTableController;
+use App\Http\Controllers\DoctorHolidayController;
 use App\Http\Controllers\DoctorPatientController;
 
 
@@ -142,12 +143,14 @@ Route::middleware('jwt.auth')->group(function () {
         Route::get('getTimings', [Doctor_timeTableController::class, 'getTimings']); // Get doctor's timin
         Route::get('getAppointments', [AppointmentController::class, 'getAppointments']);
         Route::post('getPatientWithHealthIssues', [DoctorPatientController::class, 'getPatientWithHealthIssues']);
+        Route::post('setHoliday', [DoctorHolidayController::class, 'setHoliday']);
+        Route::get('getHoliday', [DoctorHolidayController::class, 'getHoliday']);
     });
 
     // patient-only routes
     Route::middleware('auth:api', 'isPatient')->prefix('patient')->group(function () {
-        Route::post('profile', [PatientController::class, 'profile']);  // patient profile
-        Route::post('setprofile', [PatientController::class, 'setprofile']);  // patient set profile
+        Route::get('getProfile', [PatientController::class, 'getProfile']);  // patient profile
+        Route::post('setProfile', [PatientController::class, 'setProfile']);  // patient set profile
         // Route::get('user/dashboard', [UserController::class, 'dashboard']);  
         Route::post('/addHealthIssue', [HealthIssueController::class, 'addHealthIssue']);
         Route::post('getdoctors_timetable', [HealthIssueController::class, 'getdoctors_timetable']);

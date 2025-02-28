@@ -29,8 +29,8 @@ class DoctorController extends Controller
             ->leftJoin('doctor_availability as h', 'doctors.id', '=', 'h.doctor_id')
             ->select([
                 'doctors.id',
-                'doctors.specialization_id',
-                'doctors.degree_id',
+                'doctors.specialization',
+                'doctors.degree',
                 'doctors.license_number',
 
                 'w.current_hospital_clinic',

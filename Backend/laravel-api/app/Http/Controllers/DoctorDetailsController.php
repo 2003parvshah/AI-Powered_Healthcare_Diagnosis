@@ -19,10 +19,11 @@ class DoctorDetailsController extends Controller
             ->select(
                 'users.name',
                 'doctors.id',
-                'doctors.specialization_id',
+                'doctors.specialization',
                 'doctor_work_experience.experience',
                 'doctor_fees.consultation_fees',
-                'doctor_personal_info.profile_photo'
+                'doctor_personal_info.profile_photo',
+                'doctors.degree'
             )
             ->get();
 
@@ -31,17 +32,18 @@ class DoctorDetailsController extends Controller
         }
 
         // Create a DTO instance
-        $doctorList = $doctorDetails->map(function ($doctor) {
-            return new DoctorDetailsDTO(
-                $doctor->name,
-                $doctor->specialization_id,
-                $doctor->experience,
-                $doctor->consultation_fees,
-                $doctor->profile_photo,
-                $doctor->id
-            );
-        });
+        // $doctorList = $doctorDetails->map(function ($doctor) {
+        //     return new DoctorDetailsDTO(
+        //         $doctor->name,
+        //         $doctor->specialization,
+        //         $doctor->experience,
+        //         $doctor->consultation_fees,
+        //         $doctor->profile_photo,
+        //         $doctor->id ,
+        //         $
+        //     );
+        // });
 
-        return response()->json($doctorList, 200);
+        return response()->json($doctorDetails, 200);
     }
 }

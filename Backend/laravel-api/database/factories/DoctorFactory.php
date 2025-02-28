@@ -1,4 +1,5 @@
 <?php
+
 namespace Database\Factories;
 
 use App\Models\Doctor;
@@ -15,8 +16,8 @@ class DoctorFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'specialization_id' => Specialization::factory(),
-            'degree_id' => MedicalDegree::factory(),
+            // 'specialization' => Specialization::factory(),
+            'degree' => MedicalDegree::factory(),
             'license_number' => $this->faker->unique()->numerify('LIC####'),
         ];
     }

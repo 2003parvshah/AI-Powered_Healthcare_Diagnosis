@@ -51,8 +51,8 @@ class UserSeeder extends Seeder
 
             Doctor::create([
                 'id' => $user->id,
-                'specialization_id' => $i, // Example specialization
-                'degree_id' => $i, // Example degree
+                'specialization' => $i, // Example specialization
+                'degree' => $i, // Example degree
                 'license_number' => "LIC-1000{$i}",
             ]);
         }

@@ -10,6 +10,7 @@ class DoctorSeeder extends Seeder
 {
     public function run()
     {
+
         DB::table('doctors')->insert([
             [
                 'user_id' => 14,
