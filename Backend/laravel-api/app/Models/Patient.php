@@ -28,7 +28,7 @@ class Patient extends Model
 
     public function healthIssues()
     {
-        return $this->hasMany(HealthIssue::class);
+        return $this->hasMany(HealthIssue::class, 'patient_id', 'id');
     }
 
     public function appointments()

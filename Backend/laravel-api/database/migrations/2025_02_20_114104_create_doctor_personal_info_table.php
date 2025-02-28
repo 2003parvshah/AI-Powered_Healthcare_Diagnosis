@@ -11,7 +11,7 @@ class CreateDoctorPersonalInfoTable extends Migration
         Schema::create('doctor_personal_info', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('doctor_id')->unique();
-            $table->string('full_name');
+            // $table->string('full_name');
             $table->date('date_of_birth')->nullable();
             $table->enum('gender', ['male', 'female', 'other'])->nullable();
             $table->string('profile_photo')->nullable();

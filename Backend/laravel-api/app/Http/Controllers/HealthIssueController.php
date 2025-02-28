@@ -89,13 +89,31 @@ class HealthIssueController extends Controller
         //     ])
         //     ->get();
 
-        $doctorSchedules = DoctorAvailability::where('doctor_availability.doctor_id', '=', $request->doctor_id)
-            ->join('doctor_timeTable as tt', function ($join) use ($weekDayName) {
-                $join->on('doctor_availability.doctor_id', '=', 'tt.doctor_id')
-                    ->where('tt.day', '=', $weekDayName); // Filter by weekday
+        // $doctorSchedules = DoctorAvailability::where('doctor_availability.doctor_id', '=', $request->doctor_id)
+        //     ->join('doctor_timeTable as tt', function ($join) use ($weekDayName) {
+        //         $join->on('doctor_availability.doctor_id', '=', 'tt.doctor_id')
+        //             ->where('tt.day', '=', $weekDayName); // Filter by weekday
+        //     })
+        //     ->leftJoin('appointments as ap', 'doctor_availability.doctor_id', '=', 'ap.doctor_id')
+        //     ->select([
+        //         'doctor_availability.doctor_id',
+        //         'doctor_availability.time_of_one_appointment',
+        //         'tt.start_time',
+        //         'tt.end_time',
+        //         'tt.address',
+        //         'tt.timezone',
+        //         'tt.day',
+        //         'ap.appointment_date'
+        //     ])
+        //     ->get();
+        $doctorSchedules = DoctorAvailability::join('doctor_timeTable as tt', 'doctor_availability.doctor_id', '=', 'tt.doctor_id')
+            ->leftJoin('appointments as ap', function ($join) use ($request) {
+                $join->on('doctor_availability.doctor_id', '=', 'ap.doctor_id')
+                    ->where('ap.appointment_date', '=', $request->date); // Apply condition inside LEFT JOIN
             })
-            ->leftJoin('appointments as ap', 'doctor_availability.doctor_id', '=', 'ap.doctor_id')
-            ->select([
+            ->where('doctor_availability.doctor_id', '=', $request->doctor_id)
+            ->where('tt.day', '=', $weekDayName) // Apply weekday filter separately
+            ->select(
                 'doctor_availability.doctor_id',
                 'doctor_availability.time_of_one_appointment',
                 'tt.start_time',
@@ -104,8 +122,10 @@ class HealthIssueController extends Controller
                 'tt.timezone',
                 'tt.day',
                 'ap.appointment_date'
-            ])
+            )
             ->get();
+
+
 
 
         // Prepare schedule data    

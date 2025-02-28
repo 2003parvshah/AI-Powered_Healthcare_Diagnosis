@@ -57,6 +57,10 @@ pass key which store on mobile
 arn:aws:iam::216989106147:root
 
 
+ sudo mysql -u root -p Sur@1256
+
+ mysql> ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'Sur@1256';
+Query OK, 0 rows affected (0.01 sec)
 
 
 
@@ -68,10 +72,11 @@ arn:aws:iam::216989106147:root
 
 
 php artisan serve --host=0.0.0.0 --port=8000
+php artisan db:seed --class=WeeksTableSeeder
 php artisan db:seed --class=SpecializationSeeder
 php artisan db:seed --class=MedicalDegreeSeeder
-php artisan db:seed --class=WeeksTableSeeder
 php artisan db:seed --class=UserSeeder
 php artisan db:seed --class=DoctorTimeTableSeeder
+php artisan db:seed --class=Health_issueSeeder
 php artisan db:seed --class=AppointmentsTableSeeder
 php artisan db:seed --class=DoctorAvailabilitySeeder

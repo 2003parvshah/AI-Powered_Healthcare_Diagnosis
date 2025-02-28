@@ -14,6 +14,8 @@ use App\Http\Controllers\DoctorWorkExperienceController;
 use App\Http\Controllers\DoctorDetailsController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\Doctor_timeTableController;
+use App\Http\Controllers\DoctorPatientController;
+
 
 
 use App\Http\Controllers\FileController;
@@ -139,6 +141,7 @@ Route::middleware('jwt.auth')->group(function () {
         Route::post('setTimings', [Doctor_timeTableController::class, 'setTimings']); // Store doctor's timings
         Route::get('getTimings', [Doctor_timeTableController::class, 'getTimings']); // Get doctor's timin
         Route::get('getAppointments', [AppointmentController::class, 'getAppointments']);
+        Route::post('getPatientWithHealthIssues', [DoctorPatientController::class, 'getPatientWithHealthIssues']);
     });
 
     // patient-only routes
@@ -152,5 +155,6 @@ Route::middleware('jwt.auth')->group(function () {
         Route::get('getAllDoctorDetails', [DoctorDetailsController::class, 'getAllDoctorDetails']);
         Route::post('setAppointment', [AppointmentController::class, 'setAppointment']);
         Route::post('getAllInfoDoctors', [DoctorController::class, 'getAllInfoDoctors']);
+        Route::get('getAppointments', [AppointmentController::class, 'getAppointments']);
     });
 });

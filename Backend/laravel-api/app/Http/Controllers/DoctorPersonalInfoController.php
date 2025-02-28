@@ -14,7 +14,7 @@ class DoctorPersonalInfoController extends Controller
     {
         // Validate incoming data
         $request->validate([
-            'full_name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'date_of_birth' => 'required|date',
             'gender' => 'required|in:male,female,other',
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Image validation
@@ -35,7 +35,7 @@ class DoctorPersonalInfoController extends Controller
         $personalInfo = DoctorPersonalInfo::updateOrCreate(
             ['doctor_id' => $user->id], // Find by doctor_id
             [
-                'full_name' => $request->full_name,
+                // 'full_name' => $request->full_name,
                 'date_of_birth' => $request->date_of_birth,
                 'gender' => $request->gender,
                 'profile_photo' => $profilePhotoUrl ?? null, // Store image URL

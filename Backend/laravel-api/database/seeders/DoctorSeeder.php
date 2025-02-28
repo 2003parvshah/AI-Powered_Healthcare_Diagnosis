@@ -13,7 +13,7 @@ class DoctorSeeder extends Seeder
         DB::table('doctors')->insert([
             [
                 'user_id' => 14,
-                'full_name' => 'd1',
+                // 'full_name' => 'd1',
                 'date_of_birth' => '1980-05-15',
                 'gender' => 'Male',
                 'profile_photo' => 'https://example.com/photos/john_doe.jpg',
@@ -56,7 +56,7 @@ class DoctorSeeder extends Seeder
             ],
             [
                 'user_id' => 15,
-                'full_name' => 'd2',
+                // 'full_name' => 'd2',
                 'date_of_birth' => '1975-11-20',
                 'gender' => 'female',
                 'profile_photo' => 'https://example.com/photos/jane_smith.jpg',
