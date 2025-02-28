@@ -1,5 +1,6 @@
 __pycache__/
-model_cache/AI_medical_diagnosis/
+model_cache/
+AI_medical_diagnosis/
 Tiles_matching_model_research/
 mercari_price_suggestion_challenge/
 trial.py
