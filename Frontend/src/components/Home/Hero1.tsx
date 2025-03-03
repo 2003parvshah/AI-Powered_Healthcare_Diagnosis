@@ -31,19 +31,19 @@ export const Hero1 = () => {
     >
       <div className="flex h-full w-full flex-col items-center justify-center px-6">
         <motion.div
-          className="flex w-full items-start justify-start text-9xl font-bold"
+          className="flex w-full items-start justify-start text-7xl font-bold md:text-9xl"
           variants={textVariants}
         >
           Health<span className="text-primary">.</span>
         </motion.div>
         <motion.div
-          className="flex w-full items-center justify-center text-9xl font-bold"
+          className="flex w-full items-center justify-center text-7xl font-bold md:text-9xl"
           variants={textVariants}
         >
           Meets<span className="text-primary">.</span>
         </motion.div>
         <motion.div
-          className="flex w-full items-end justify-end text-9xl font-bold"
+          className="flex w-full items-end justify-end text-7xl font-bold md:text-9xl"
           variants={textVariants}
         >
           AI+ML<span className="text-primary">.</span>

@@ -40,6 +40,9 @@ export const DoctorProfile = () => {
   );
   const [workInfo, setWorkInfo] = useState<Partial<DoctorPersonalInfo>>({});
   const [feeInfo, setFeeInfo] = useState<Partial<DoctorPersonalInfo>>({});
+  const [availability, setAvailability] = useState<Partial<DoctorPersonalInfo>>(
+    {},
+  );
   const [editData, setEditData] = useState<Partial<DoctorPersonalInfo>>({});
   const [editWorkData, setEditWorkData] = useState<Partial<DoctorPersonalInfo>>(
     {},
@@ -47,10 +50,14 @@ export const DoctorProfile = () => {
   const [editFeeData, setEditFeeData] = useState<Partial<DoctorPersonalInfo>>(
     {},
   );
+  const [editAvailability, setEditAvailability] = useState<
+    Partial<DoctorPersonalInfo>
+  >({});
   // const [isEditing, setIsEditing] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingWork, setIsEditingWork] = useState(false);
   const [isEditingFees, setIsEditingFees] = useState(false);
+  const [isEditingAvailability, setIsEditingAvailability] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   // Fetch Doctor Data
   useEffect(() => {
@@ -81,9 +88,23 @@ export const DoctorProfile = () => {
               Authorization: `Bearer ${token}`,
             },
           }),
+          axios.get(
+            `${import.meta.env.VITE_BASE_URL}/doctor/getDoctorAvailability`,
+            {
+              headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          ),
         ]);
 
-        const [personalResponse, workResponse, feeResponse] = responses;
+        const [
+          personalResponse,
+          workResponse,
+          feeResponse,
+          availabilityResponse,
+        ] = responses;
 
         if (personalResponse.status === "fulfilled") {
           setPersonalInfo(personalResponse.value.data.data);
@@ -108,6 +129,15 @@ export const DoctorProfile = () => {
         } else {
           console.error("Error fetching fee details:", feeResponse.reason);
         }
+        if (availabilityResponse.status === "fulfilled") {
+          setAvailability(availabilityResponse.value.data.data);
+          setEditAvailability(availabilityResponse.value.data.data);
+        } else {
+          console.error(
+            "Error fetching availability details:",
+            availabilityResponse.reason,
+          );
+        }
       } catch (err) {
         toast.error("Something wrong occured");
         console.error("Unexpected error fetching doctor details:", err);
@@ -129,6 +159,8 @@ export const DoctorProfile = () => {
       formData.append("languages_spoken", editData.languages_spoken || "");
       formData.append("degree", editData.degree || "");
       formData.append("specialization", editData.specialization || "");
+      formData.append("license_number", editData.license_number || "");
+      formData.append("phone_number", editData.phone_number || "");
 
       if (editData.profile_photo instanceof File) {
         formData.append("profile_photo", editData.profile_photo);
@@ -246,6 +278,55 @@ export const DoctorProfile = () => {
       setIsEditingFees(false);
     }
   };
+  const handleUpdateAvailability = async () => {
+    setIsUploading(true);
+    // console.log(editWorkData);
+
+    try {
+      const formData = new FormData();
+      formData.append(
+        "time_of_one_appointment",
+        editAvailability.time_of_one_appointment || "",
+      );
+      formData.append(
+        "online_consultation_availability",
+        JSON.stringify(editAvailability.online_consultation_availability),
+      );
+      formData.append(
+        "walk_in_availability",
+        JSON.stringify(editAvailability.walk_in_availability),
+      );
+      formData.append(
+        "appointment_booking_required",
+        JSON.stringify(editAvailability.appointment_booking_required),
+      );
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/doctor/setDoctorAvailability`,
+        formData,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      console.log(response);
+
+      if (response.status === 201) {
+        setAvailability(response.data.data);
+        toast.success("Update successfull");
+      } else {
+        console.error("Error updating profile:", response.statusText);
+      }
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      toast.error("Something wrong occured");
+    } finally {
+      setIsUploading(false);
+      setIsEditingAvailability(false);
+    }
+  };
 
   return (
     <section className="flex max-w-6xl flex-col items-start justify-start space-y-6 p-4">
@@ -359,6 +440,23 @@ export const DoctorProfile = () => {
                       </Select>
                     </div>
                     <div>
+                      <Label htmlFor="phone_number" className="text-right">
+                        Phone number
+                      </Label>
+                      <Input
+                        type="text"
+                        id="phone_number"
+                        value={editData.phone_number || ""}
+                        className="col-span-3"
+                        onChange={(e) =>
+                          setEditData({
+                            ...editData,
+                            phone_number: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div>
                       <Label htmlFor="nationality" className="text-right">
                         Nationality
                       </Label>
@@ -394,6 +492,23 @@ export const DoctorProfile = () => {
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="license_number" className="text-right">
+                        License number
+                      </Label>
+                      <Input
+                        type="text"
+                        id="license_number"
+                        value={editData.license_number || ""}
+                        className="col-span-3"
+                        onChange={(e) =>
+                          setEditData({
+                            ...editData,
+                            license_number: e.target.value,
+                          })
+                        }
+                      />
                     </div>
                     <div className="grid gap-2">
                       <div>
@@ -472,8 +587,13 @@ export const DoctorProfile = () => {
           <CardContent className="space-y-4">
             <InfoRow label="Gender" value={personalInfo?.gender} />
             <InfoRow label="Birthday" value={personalInfo?.date_of_birth} />
+            <InfoRow label="Phone number" value={personalInfo?.phone_number} />
             <InfoRow label="Nationality" value={personalInfo?.nationality} />
             <InfoRow label="Degree" value={personalInfo?.degree} />
+            <InfoRow
+              label="License Number"
+              value={personalInfo?.license_number}
+            />
             <InfoRow
               label="Specialization"
               value={personalInfo?.specialization}
@@ -681,6 +801,138 @@ export const DoctorProfile = () => {
             />
           </CardContent>
         </Card>
+        {/* Availability Info */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              Availability Information{" "}
+              <Dialog
+                open={isEditingAvailability}
+                onOpenChange={setIsEditingAvailability}
+              >
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline">
+                    <Pencil size={15} />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle>Edit Availability</DialogTitle>
+                    <DialogDescription>
+                      Update your Availability details and save the changes.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div>
+                      <Label
+                        htmlFor="time_of_one_appointment"
+                        className="text-right"
+                      >
+                        time_of_one_appointment
+                      </Label>
+                      <Input
+                        id="time_of_one_appointment"
+                        value={editAvailability.time_of_one_appointment || ""}
+                        className="col-span-3"
+                        onChange={(e) =>
+                          setEditAvailability({
+                            ...editAvailability,
+                            time_of_one_appointment: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="online_consultation_availability">
+                          Online Consultation
+                        </Label>
+                        <input
+                          type="checkbox"
+                          id="online_consultation_availability"
+                          checked={
+                            editAvailability.online_consultation_availability
+                          }
+                          onChange={(e) =>
+                            setEditAvailability({
+                              ...editAvailability,
+                              online_consultation_availability:
+                                e.target.checked,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="walk_in_availability">Walk-in</Label>
+                        <input
+                          type="checkbox"
+                          id="walk_in_availability"
+                          checked={editAvailability.walk_in_availability}
+                          onChange={(e) =>
+                            setEditAvailability({
+                              ...editAvailability,
+                              walk_in_availability: e.target.checked,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="appointment_booking_required">
+                          Appointment Booking
+                        </Label>
+                        <input
+                          type="checkbox"
+                          id="appointment_booking_required"
+                          checked={
+                            editAvailability.appointment_booking_required
+                          }
+                          onChange={(e) =>
+                            setEditAvailability({
+                              ...editAvailability,
+                              appointment_booking_required: e.target.checked,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      onClick={handleUpdateAvailability}
+                      disabled={isUploading}
+                    >
+                      {isUploading ? "Uploading..." : "Save changes"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <InfoRow
+              label="time_of_one_appointment"
+              value={availability?.time_of_one_appointment}
+            />
+            <InfoRow
+              label="online_consultation_availability"
+              value={
+                availability?.online_consultation_availability ? "Yes" : "No"
+              }
+            />
+            <InfoRow
+              label="walk_in_availability"
+              value={availability?.walk_in_availability ? "Yes" : "No"}
+            />
+            <InfoRow
+              label="appointment_booking_required"
+              value={availability?.appointment_booking_required ? "Yes" : "No"}
+            />
+          </CardContent>
+        </Card>
       </div>
     </section>
   );
@@ -697,7 +949,7 @@ const InfoRow = ({
   <div className="flex items-center gap-3">
     <div>
       <p className="text-muted-foreground text-sm">{label}</p>
-      <p>{value || "N/A"}</p>
+      <p className="capitalize">{value || "N/A"}</p>
     </div>
   </div>
 );

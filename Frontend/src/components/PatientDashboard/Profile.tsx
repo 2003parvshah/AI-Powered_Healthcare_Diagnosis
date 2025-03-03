@@ -38,10 +38,17 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { UserInterface } from "@/interface/user";
+interface AppointmentInterface {
+  appointment_date: string;
+  patient_name: string;
+  diagnosis: string;
+  name: string;
+}
 export const Profile = () => {
   const token = useSelector((state: RootState) => state.auth.token);
   const user = useSelector((state: RootState) => state.auth.user);
   const [personalInfo, setPersonalInfo] = useState<Partial<UserInterface>>({});
+  const [appointments, setAppointments] = useState<AppointmentInterface[]>([]);
   // const [userData, setUserData] = useState<Partial<UserInterface>>({});
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editData, setEditData] = useState<Partial<UserInterface>>({});
@@ -108,12 +115,40 @@ export const Profile = () => {
         console.log(error);
       }
     };
+    const fetchAppointments = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/patient/getAppointments`,
+          {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+        if (response.status === 200) {
+          setAppointments(response.data.appointments);
+        }
+        console.log(response);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchAppointments();
     fetchProfileDetails();
   }, [token]);
   useEffect(() => {
     console.log(editData);
   }, [editData]);
+  const currentDate = new Date();
 
+  const upcomingAppointments = appointments.filter(
+    (appointment) => new Date(appointment.appointment_date) > currentDate,
+  );
+
+  const pastAppointments = appointments.filter(
+    (appointment) => new Date(appointment.appointment_date) <= currentDate,
+  );
   return (
     <section className="flex max-w-5xl flex-col items-start justify-start space-y-6 p-4">
       {/* Header Section */}
@@ -384,30 +419,14 @@ export const Profile = () => {
           </CardContent>
         </Card>
 
-        {/* Appointment Schedule */}
-        <Card>
+        {/* Upcoming Appointments */}
+        <Card className="w-full">
           <CardHeader>
-            <CardTitle>Appointment Schedule</CardTitle>
+            <CardTitle>Upcoming Appointments</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="">
-              {[
-                {
-                  date: "12 Oct 2023",
-                  title: "Prosthetic Tooth Fabrication",
-                  doctor: "Drs. Wade Warren",
-                },
-                {
-                  date: "12 Sep 2023",
-                  title: "Post-Surgical Care",
-                  doctor: "Drs Marvin McKinney",
-                },
-                {
-                  date: "12 Aug 2023",
-                  title: "Implant Placement",
-                  doctor: "Drs Floyd Miles",
-                },
-              ].map((appointment, index) => (
+            {upcomingAppointments.length > 0 ? (
+              upcomingAppointments.map((appointment, index) => (
                 <div
                   key={index}
                   className="relative border-l-2 border-blue-200 pb-4 pl-6"
@@ -415,74 +434,55 @@ export const Profile = () => {
                   <div className="absolute left-0 h-4 w-4 -translate-x-1/2 rounded-full bg-blue-500" />
                   <div>
                     <p className="text-sm font-medium text-blue-500">
-                      {appointment.date}
+                      {new Date(
+                        appointment.appointment_date + "Z",
+                      ).toLocaleString()}{" "}
                     </p>
-                    <p className="font-medium">{appointment.title}</p>
+                    <p className="font-medium">{appointment.diagnosis}</p>
                     <p className="text-muted-foreground text-sm">
-                      {appointment.doctor}
+                      Doctor ID: {appointment.name}
                     </p>
-                    <p> </p>
                   </div>
                 </div>
-              ))}
-            </div>
+              ))
+            ) : (
+              <p className="text-gray-500">No upcoming appointments</p>
+            )}
           </CardContent>
         </Card>
-        {/* History Dental */}
+
+        {/* Past Appointments */}
         <Card className="w-full sm:col-span-2">
           <CardHeader>
             <CardTitle>Past Appointments</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Type Treatment</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Doctor</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody className="overflow-auto">
-                {[
-                  {
-                    id: "#12324",
-                    type: "🦷 Implant",
-                    date: "12 Jun 2023",
-                    doctor: "Dr. John Doe",
-                  },
-                  {
-                    id: "#20324",
-                    type: "🦷 Route canal",
-                    date: "4 May 2023",
-                    doctor: "Dr. John Doe",
-                  },
-                  {
-                    id: "#57686",
-                    type: "🦷 Dentures",
-                    date: "2 Mar 2023",
-                    doctor: "Dr. John Doe",
-                  },
-                  {
-                    id: "#68767",
-                    type: "🦷 Whitening",
-                    date: "16 Feb 2023",
-                    doctor: "Dr. John Doe",
-                  },
-                ].map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{item.id}</TableCell>
-                    <TableCell>{item.type}</TableCell>
-                    <TableCell>{item.date}</TableCell>
-                    <TableCell>
-                      <span className="flex items-center gap-1">
-                        {item.doctor}
-                      </span>
-                    </TableCell>
+            {pastAppointments.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Diagnosis</TableHead>
+                    <TableHead>Doctor</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {pastAppointments.map((appointment, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        {new Date(
+                          appointment.appointment_date + "Z",
+                        ).toDateString()}
+                      </TableCell>
+                      <TableCell>{appointment.diagnosis}</TableCell>
+                      <TableCell>{appointment.name}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="text-gray-500">No past appointments</p>
+            )}
           </CardContent>
         </Card>
       </div>

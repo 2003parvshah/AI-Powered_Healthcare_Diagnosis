@@ -12,6 +12,8 @@ import { DoctorDialog } from "./DoctorDialog";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import axios from "axios";
+import { Skeleton } from "@/components/ui/skeleton";
+
 interface doctorInterface {
   id: number;
   name: string;
@@ -21,14 +23,6 @@ interface doctorInterface {
   profile_photo: string;
   degree: string;
 }
-// const doctors = [
-//   { name: "Dr. Jennie Kim", specialization: "Dermatology", price: 110 },
-//   { name: "Prof. Dr. Niall Horan", specialization: "Psychiatry", price: 36 },
-//   { name: "Dr. Alexandra Boje", specialization: "Cardiology", price: 200 },
-//   { name: "Dr. Veronica Nguyen", specialization: "Gynecology", price: 36 },
-//   { name: "Dr. Adam Hall", specialization: "Orthopedics", price: 360 },
-//   { name: "Prof. Dr. Dirly Sanders", specialization: "Anesthesiology", price: 7006 },
-// ];
 
 export const Specialist = () => {
   const token = useSelector((state: RootState) => state.auth.token);
@@ -38,7 +32,8 @@ export const Specialist = () => {
   const [selectedPriceRange, setSelectedPriceRange] = useState<string | null>(
     null,
   );
-  const [doctors, setDoctors] = useState<doctorInterface[]>();
+  const [doctors, setDoctors] = useState<doctorInterface[] | null>(null);
+
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
@@ -48,7 +43,6 @@ export const Specialist = () => {
             headers: { Authorization: `Bearer ${token}` },
           },
         );
-        console.log(response);
         setDoctors(response.data);
       } catch (error) {
         console.log(error);
@@ -57,7 +51,6 @@ export const Specialist = () => {
     fetchDoctors();
   }, [token]);
 
-  // Function to filter doctors
   const filteredDoctors = doctors?.filter((doctor) => {
     const matchesSpecialization =
       !selectedSpecialization ||
@@ -97,52 +90,67 @@ export const Specialist = () => {
       </div>
 
       <h3 className="mt-6 text-xl font-semibold">
-        Recommended Doctors ({filteredDoctors?.length})
+        Recommended Doctors ({doctors ? filteredDoctors?.length : "Loading..."})
       </h3>
       <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filteredDoctors?.map((doctor, index) =>
-          doctor.experience ? (
-            <Card key={index} className="flex max-w-2xl flex-col">
-              <CardHeader className="flex gap-4 p-2">
-                <div className="flex flex-row items-stretch justify-start gap-4">
-                  <img
-                    src={`${doctor.profile_photo}`}
-                    alt={doctor.name}
-                    className="aspect-square w-16 rounded-full object-cover"
-                  />
-                  <div className="flex flex-col justify-evenly">
-                    <CardTitle className="text-lg font-medium">
-                      {doctor.name}
-                    </CardTitle>
-                    <CardDescription className="text-muted-foreground">
-                      {doctor.specialization}
-                    </CardDescription>
+        {doctors
+          ? filteredDoctors?.map((doctor, index) => (
+              <Card key={index} className="flex max-w-2xl flex-col">
+                <CardHeader className="flex gap-4 p-2">
+                  <div className="flex flex-row items-stretch justify-start gap-4">
+                    <img
+                      src={`${doctor.profile_photo}`}
+                      alt={doctor.name}
+                      className="aspect-square w-16 rounded-full object-cover"
+                    />
+                    <div className="flex flex-col justify-evenly">
+                      <CardTitle className="text-lg font-medium">
+                        {doctor.name}
+                      </CardTitle>
+                      <CardDescription className="text-muted-foreground">
+                        {doctor.specialization}
+                      </CardDescription>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="bg-secondary m-2 flex flex-col gap-1 rounded p-2">
-                <div className="flex flex-row items-center justify-between p-2">
-                  <div className="font-semibold">
-                    <p>{doctor.experience} years</p>
-                    <p className="text-muted-foreground font-normal">
-                      Experience
-                    </p>
+                </CardHeader>
+                <CardContent className="bg-secondary m-2 flex flex-col gap-1 rounded p-2">
+                  <div className="flex flex-row items-center justify-between p-2">
+                    <div className="font-semibold">
+                      <p>{doctor.experience} years</p>
+                      <p className="text-muted-foreground font-normal">
+                        Experience
+                      </p>
+                    </div>
+                    <Separator orientation="vertical" />
+                    <div>
+                      <p className="text-foreground text-xl font-bold">
+                        ${doctor.consultation_fees}
+                      </p>
+                      <p className="text-muted-foreground">Consultation fee</p>
+                    </div>
                   </div>
-                  <Separator orientation="vertical" />
-                  <div>
-                    <p className="text-foreground text-xl font-bold">
-                      ${doctor.consultation_fees}
-                    </p>
-                    <p className="text-muted-foreground">Consultation fee</p>
-                  </div>
-                </div>
-                <DoctorDialog doctor={doctor} />
-              </CardContent>
-            </Card>
-          ) : (
-            ""
-          ),
-        )}
+                  <DoctorDialog doctor={doctor} />
+                </CardContent>
+              </Card>
+            ))
+          : Array(8)
+              .fill(null)
+              .map((_, index) => (
+                <Card key={index} className="flex max-w-2xl flex-col">
+                  <CardHeader className="flex gap-4 p-2">
+                    <Skeleton className="h-16 w-16 rounded-full" />
+                    <div className="flex flex-col gap-2">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="bg-secondary m-2 flex flex-col gap-1 rounded p-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-4 w-full" />
+                  </CardContent>
+                </Card>
+              ))}
       </div>
     </section>
   );

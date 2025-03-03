@@ -75,20 +75,20 @@ export const DoctorDialog = ({ doctor }: { doctor: doctorInterface }) => {
   };
 
   // useEffect(() => {
-  const fetchDoctorDetails = async () => {
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/patient/getdoctors_timetable`,
-        { doctor_id: doctor.id, date: selectedTimeSlot },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-      console.log(response);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  // const fetchDoctorDetails = async () => {
+  //   try {
+  //     const response = await axios.post(
+  //       `${import.meta.env.VITE_BASE_URL}/patient/getdoctors_timetable`,
+  //       { doctor_id: doctor.id, date: selectedTimeSlot },
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       },
+  //     );
+  //     console.log(response);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
   // fetchDoctorDetails();
   // }, [doctor_id, token]);
   return (
@@ -97,7 +97,7 @@ export const DoctorDialog = ({ doctor }: { doctor: doctorInterface }) => {
         <Button
           size="lg"
           className="rounded font-normal"
-          onClick={fetchDoctorDetails}
+          // onClick={fetchDoctorDetails}
         >
           Book Appointment <ChevronRight strokeWidth={3} />
         </Button>

@@ -463,7 +463,7 @@ const CalendarWeekView = () => {
 };
 
 const CalendarMonthView = () => {
-  const { date, view, events, locale } = useCalendar();
+  const { date, setDate, setView, view, events, locale } = useCalendar();
 
   const monthDates = useMemo(() => getDaysInMonth(date), [date]);
   const weekDays = useMemo(() => generateWeekdays(locale), [locale]);
@@ -498,10 +498,14 @@ const CalendarMonthView = () => {
                 !isSameMonth(date, _date) && "text-muted-foreground/50",
               )}
               key={_date.toString()}
+              onClick={() => {
+                setDate(_date);
+                setView("week");
+              }}
             >
               <span
                 className={cn(
-                  "sticky top-0 mb-1 grid size-6 place-items-center rounded-full",
+                  "sticky top-0 mb-1 grid size-6 cursor-pointer place-items-center rounded-full",
                   isToday(_date) && "bg-primary text-primary-foreground",
                 )}
               >
@@ -706,6 +710,38 @@ const CalendarTodayTrigger = forwardRef<
 });
 CalendarTodayTrigger.displayName = "CalendarTodayTrigger";
 
+const CalendarJumpToDate = forwardRef<
+  HTMLButtonElement,
+  React.HTMLAttributes<HTMLButtonElement>
+>(({ children, onClick, ...props }, ref) => {
+  const { setDate, enableHotkeys, date } = useCalendar();
+
+  useHotkeys("j", () => jumpToSelectedDate(), {
+    enabled: enableHotkeys,
+  });
+
+  const jumpToSelectedDate = useCallback(() => {
+    if (date) {
+      setDate(date);
+    }
+  }, [date, setDate]);
+
+  return (
+    <Button
+      variant="outline"
+      ref={ref}
+      {...props}
+      onClick={(e) => {
+        jumpToSelectedDate();
+        onClick?.(e);
+      }}
+    >
+      {children}
+    </Button>
+  );
+});
+
+CalendarJumpToDate.displayName = "CalendarJumpToDate";
 const CalendarCurrentDate = () => {
   const { date, view } = useCalendar();
 

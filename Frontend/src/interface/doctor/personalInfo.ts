@@ -6,6 +6,8 @@ export interface DoctorPersonalInfo {
   gender: string;
   degree: string;
   specialization: string;
+  license_number: string;
+  phone_number: string;
   profile_photo?: string | File;
   nationality: string;
   languages_spoken: string;
@@ -16,4 +18,8 @@ export interface DoctorPersonalInfo {
   internship_residency_details: string;
   consultation_fees: number;
   payment_methods_accepted: string;
+  time_of_one_appointment: string;
+  online_consultation_availability: boolean;
+  walk_in_availability: boolean;
+  appointment_booking_required: boolean;
 }

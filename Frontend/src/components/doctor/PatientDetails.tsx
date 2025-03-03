@@ -6,7 +6,8 @@ import { File, FileImage, Mail, Phone } from "lucide-react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import axios from "axios";
-
+import { motion } from "framer-motion";
+import DoctorAvailableTimee from "../patientDashboard/DoctorAvailableTimee";
 interface HealthIssue {
   diagnosis: string;
   symptoms: string;
@@ -37,6 +38,7 @@ export const PatientDetails = ({
 }) => {
   const token = useSelector((state: RootState) => state.auth.token);
   const [patient, setPatient] = useState<Patient | null>(null);
+  const [showReschedule, setShowReschedule] = useState(false);
 
   useEffect(() => {
     const fetchPatientDetails = async () => {
@@ -57,6 +59,10 @@ export const PatientDetails = ({
   }, [event.id, token]);
 
   if (!patient) return <p>Loading...</p>;
+
+  function handleTimeSlotSelection(): void {
+    throw new Error("Function not implemented.");
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -144,8 +150,22 @@ export const PatientDetails = ({
           </Card>
         </>
       )}
-
-      <Button>Reschedule</Button>
+      <motion.div
+        initial={{ height: 0 }}
+        animate={{
+          height: showReschedule ? 400 : 0,
+        }}
+        transition={{ duration: 0.5 }}
+        className="h-40 w-full overflow-hidden"
+      >
+        <DoctorAvailableTimee
+          id={6}
+          onTimeSlotSelect={handleTimeSlotSelection}
+        />
+      </motion.div>
+      <Button onClick={() => setShowReschedule(!showReschedule)}>
+        Reschedule
+      </Button>
     </div>
   );
 };
