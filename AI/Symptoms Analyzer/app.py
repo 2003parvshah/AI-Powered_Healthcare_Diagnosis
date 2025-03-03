@@ -24,9 +24,7 @@ class SymptomInput(BaseModel):
     symptoms: str  # Example: "I have a persistent cough, fever, and chills."
 
 @app.post("/predict")
-def predict_disease(symptoms: str):
-    input_data = SymptomInput(symptoms=symptoms)  # Create an instance of SymptomInput
-
+def predict_disease(input_data: SymptomInput):
     # Perform prediction
     result = classifier(input_data.symptoms)
 
@@ -37,6 +35,7 @@ def predict_disease(symptoms: str):
     predicted_disease = label_encoder.inverse_transform([predicted_label_index])[0]
 
     return {"predicted_disease": predicted_disease}
+
 
 @app.get("/")
 def home():
