@@ -84,6 +84,9 @@ class PatientController extends Controller
             $uploadData = json_decode($uploadResponse->getContent(), true);
 
             if (isset($uploadData['url'])) {
+                $oldprofile = $patient->profile_photo;
+                cloudinaryClass::deleteByUrl($oldprofile);
+
                 $patient->profile_photo = $uploadData['url'];
             }
         }

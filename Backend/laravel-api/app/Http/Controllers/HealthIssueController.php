@@ -14,15 +14,21 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\DTOs\DoctorScheduleDTO;
 use App\Models\DoctorHoliday;
+use Illuminate\Support\Facades\Http;
 // use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Queue;
 
 class HealthIssueController extends Controller
 {
     /**
      * Store a new health issue record
      */
+
+
+
+
     public function addHealthIssue(Request $request)
     {
         $request->validate([
@@ -30,12 +36,23 @@ class HealthIssueController extends Controller
             'report_pdf' => 'nullable|file|mimes:pdf|max:2048',
             'report_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'doctor_type' => 'required|string',
-            'diagnosis' => 'nullable|string',
-            'solution' => 'nullable|string',
             'other_info' => 'nullable|string',
         ]);
 
         $user = JWTAuth::parseToken()->authenticate();
+
+        // Check if this health issue already exists
+        $existingIssue = HealthIssue::where('patient_id', $user->id)
+            ->where('symptoms', $request->symptoms)
+            ->first();
+
+        // If existing, return stored data
+        if ($existingIssue) {
+            return response()->json([
+                'message' => 'Existing health issue retrieved successfully',
+                'data' => $existingIssue,
+            ], 200);
+        }
 
         // Handle PDF upload
         $reportPdf = $request->file('report_pdf');
@@ -47,25 +64,59 @@ class HealthIssueController extends Controller
         $reportimagestatus = $reportImage ? cloudinaryClass::uploadimg($reportImage) : null;
         $imageData = $reportimagestatus ? $reportimagestatus->getData(true) : null;
 
-        // Create the health issue record
+        // API Base URLs from .env
+        $textApiUrl = env('TEXT_PREDICTION_API', 'http://13.126.13.196:8000/predict');
+        $imageApiUrl = env('IMAGE_PREDICTION_API', 'http://13.127.245.150:8000/predict_image');
+
+        // Initialize diagnosis & solution
+        $diagnosis = null;
+        $solution = null;
+
+        try {
+            // 1. Call text-based prediction API
+            $textPredictionResponse = Http::post($textApiUrl, [
+                'symptoms' => $request->symptoms,
+            ])->json();
+
+            // Extract diagnosis and solution from API response
+            $diagnosis = $textPredictionResponse['diagnosis'] ?? null;
+            $solution = $textPredictionResponse['solution'] ?? null;
+
+            // 2. Call image-based prediction API (if image exists)
+            if ($reportImage) {
+                $imagePredictionResponse = Http::attach(
+                    'file',
+                    file_get_contents($reportImage->getRealPath()),
+                    $reportImage->getClientOriginalName()
+                )->post("$imageApiUrl?model_type=mri")->json();
+
+                // If image API returns a diagnosis or solution, use it (optional)
+                $diagnosis = $imagePredictionResponse['diagnosis'] ?? $diagnosis;
+                $solution = $imagePredictionResponse['solution'] ?? $solution;
+            }
+        } catch (\Exception $e) {
+            Log::error('API Call Failed', ['error' => $e->getMessage()]);
+        }
+
+        // Create new health issue with API results
         $healthIssue = HealthIssue::create([
             'patient_id' => $user->id,
             'symptoms' => $request->symptoms,
-            'report_pdf' => $pdfData["url"] ?? null,  // ✅ Prevents error if $pdfData is null
-            'report_image' => $imageData["url"] ?? null, // ✅ Prevents error if $imageData is null
+            'report_pdf' => $pdfData["url"] ?? null,
+            'report_image' => $imageData["url"] ?? null,
             'doctor_type' => $request->doctor_type,
-            'diagnosis' => $request->diagnosis,
-            'solution' => $request->solution,
+            'diagnosis' => $diagnosis,
+            'solution' => $solution,
             'other_info' => $request->other_info,
         ]);
 
         return response()->json([
-            'message' => 'Health issue recorded successfully', // ✅ Correct message
-            'data' => $healthIssue, // ✅ Correct way to return created data
-            'pdfdata' => $pdfData["url"] ?? null, // ✅ Prevents error if null
-            'imagedata' => $imageData["url"] ?? null, // ✅ Prevents error if null
+            'message' => 'Health issue recorded successfully',
+            'data' => $healthIssue,
         ], 201);
     }
+
+
 
 
     public function getdoctors_timetable(Request $request)
@@ -74,8 +125,6 @@ class HealthIssueController extends Controller
         // $user = JWTAuth::parseToken()->authenticate();
         $requestedDate = Carbon::parse($request->date);
         $weekDayName = $requestedDate->format('l'); // Get the full weekday name (e.g., Monday, Tuesday)
-
-
         $targetDate = $request->date;
         $doctorHolidays = DoctorHoliday::whereDate('start_date', '<=', $targetDate)
             ->whereDate('end_date', '>=', $targetDate)
@@ -108,12 +157,8 @@ class HealthIssueController extends Controller
 
 
         $doctorSchedules = DoctorAvailability::join('doctor_timeTable as tt', 'doctor_availability.doctor_id', '=', 'tt.doctor_id')
-            ->leftJoin('appointments as ap', function ($join) use ($request) {
-                $join->on('doctor_availability.doctor_id', '=', 'ap.doctor_id')
-                    ->where('ap.appointment_date', '=', $request->date); // Apply condition inside LEFT JOIN
-            })
             ->where('doctor_availability.doctor_id', '=', $request->doctor_id)
-            ->where('tt.day', '=', $weekDayName) // Apply weekday filter separately
+            ->where('tt.day', '=', $weekDayName)
             ->select(
                 'doctor_availability.doctor_id',
                 'doctor_availability.time_of_one_appointment',
@@ -122,9 +167,17 @@ class HealthIssueController extends Controller
                 'tt.address',
                 'tt.timezone',
                 'tt.day',
-                'ap.appointment_date'
+                // 'ap.appointment_date'
             )
             ->get();
+
+        $appointments = Appointment::where('doctor_id', $request->doctor_id)
+            ->whereDate('appointment_date', $request->date) // Ensures date comparison
+            ->get();
+        $bookedTimes = $appointments->map(function ($appointment) {
+            return Carbon::parse($appointment->appointment_date)->format('H:i:s');
+        })->toArray();
+
 
 
 
@@ -147,82 +200,54 @@ class HealthIssueController extends Controller
             // Generate time slots based on `time_of_one_appointment`
             $intervalMinutes = $scheduleData->time_of_one_appointment;
             $currentSlot = $startTimeUTC;
+            // $bookedTimes = $appointments->map(function ($appointment) {
+            //     return Carbon::parse($appointment->appointment_date)->format('H:i:s');
+            // })->toArray();
 
             while ($currentSlot->copy()->addMinutes($intervalMinutes)->lte($endTimeUTC)) {
-                // Check if the slot matches an appointment
-                // $currentSlot = $currentSlot->format('H:i:s');
-
-                $isAvailable = $currentSlot->toDateTimeString() !== $scheduleData->appointment_date;
-
-
-
-
-
-                // Check if the doctor is on holiday during this slot
-                $doctorOnHoliday = false;
-                $doctorHolidayMessage = null;
                 $slotTime = Carbon::parse($currentSlot)->format('H:i:s');
 
+                // Check if doctor is on holiday
+                $doctorOnHoliday = false;
+                $doctorHolidayMessage = null;
                 foreach ($doctorHolidays as $holiday) {
-                    // if ($slottime >= $holiday['start_time']) {
-                    //     $doctorOnHoliday = true;
-                    //     break; // Exit loop as soon as we find a matching holiday
-                    //     // $isAvailable = false;
-                    //     // $doctorHolidayMessage = "Doctor is on holiday during this time.";
-                    // }
-                    // if ($slottime <= $holiday['end_time']) {
-                    //     $doctorOnHoliday = true;
-                    //     break; // Exit loop as soon as we find a matching holiday
-                    //     // $isAvailable = false;
-                    //     // $doctorHolidayMessage = "Doctor is on holiday during this time.";    
-                    // }
                     if ($slotTime >= $holiday['start_time'] && $slotTime <= $holiday['end_time']) {
                         $doctorOnHoliday = true;
                         $doctorHolidayMessage = "Doctor is on holiday during this time.";
-                        break; // Exit loop early if doctor is on holiday
+                        break;
                     }
                 }
 
-                // If doctor is on holiday for this slot, set value0s accordingly
+                // Determine if slot is available
                 if ($doctorOnHoliday) {
                     $isAvailable = false;
-                    $doctorHolidayMessage = "Doctor is on holiday during this time.";
+                } elseif (in_array($slotTime, $bookedTimes)) {
+                    $isAvailable = false; // Slot is already booked
                 } else {
-                    $isAvailable = true; // Ensure this is explicitly set if doctor is available
-                    $doctorHolidayMessage = null;
+                    $isAvailable = true; // Slot is free
                 }
 
-
-
-
-
-
-                // dd($currentSlot->toDateTimeString());  // Print Query in Console
-                // Log::info('start time', $currentSlot->toDateTimeString());
-                Log::info('Start Time', ['time' => $currentSlot->toDateTimeString(), 'appointment time' => $scheduleData->appointment_date]);
-
-                // Store data in DTO
+                // Create schedule DTO
                 $scheduleDTO = new DoctorScheduleDTO(
                     $scheduleData->doctor_id,
                     $currentSlot->toDateTimeString(),
                     $isAvailable,
                     $scheduleData->address,
-                    $scheduleData->timezone,
+                    $scheduleData->timezone
                 );
 
-                // $schedule[] = $scheduleDTO->toArray();
                 $slotData = $scheduleDTO->toArray();
-                if ($doctorHolidays) {
+
+                // If doctor is on holiday, include holiday details
+                if ($doctorOnHoliday) {
                     $slotData['doctorHolidayMessage'] = $doctorHolidayMessage;
                     $slotData['holiday_start_time'] = $holiday['start_time'];
                     $slotData['holiday_end_time'] = $holiday['end_time'];
-                    // $slotData['currentslot'] = $currentSlot;
                 }
-
 
                 $schedule[] = $slotData;
 
-                // Move to the next slot
+                // Move to next slot
                 $currentSlot->addMinutes($intervalMinutes);
             }
         }
@@ -230,6 +255,112 @@ class HealthIssueController extends Controller
         return response()->json(['schedule' => $schedule]);
         // return response()->json(['schedule' => $doctorHolidays]);
     }
+
+    // public function getdoctors_timetable(Request $request)
+    // {
+    //     $requestedDate = Carbon::parse($request->date);
+    //     $weekDayName = $requestedDate->format('l');
+
+    //     $targetDate = $request->date;
+
+    //     // Fetch doctor holidays
+    //     $doctorHolidays = DoctorHoliday::where('doctor_id', $request->doctor_id)
+    //         ->whereDate('start_date', '<=', $targetDate)
+    //         ->whereDate('end_date', '>=', $targetDate)
+    //         ->get()
+    //         ->map(function ($holiday) use ($targetDate) {
+    //             return [
+    //                 'start_time' => Carbon::parse($holiday->start_date)->format('Y-m-d') == $targetDate
+    //                     ? Carbon::parse($holiday->start_date)->format('H:i:s')
+    //                     : '00:00:00',
+    //                 'end_time' => Carbon::parse($holiday->end_date)->format('Y-m-d') == $targetDate
+    //                     ? Carbon::parse($holiday->end_date)->format('H:i:s')
+    //                     : '23:59:59',
+    //                 'full_day' => Carbon::parse($holiday->start_date)->format('Y-m-d') < $targetDate &&
+    //                     Carbon::parse($holiday->end_date)->format('Y-m-d') > $targetDate,
+    //             ];
+    //         });
+
+    //     // If doctor is on full-day leave, return an empty schedule
+    //     if ($doctorHolidays->contains('full_day', true)) {
+    //         return response()->json(['schedule' => []]);
+    //     }
+
+    //     // Fetch doctor availability and appointments
+    //     $doctorSchedules = DoctorAvailability::join('doctor_timeTable as tt', 'doctor_availability.doctor_id', '=', 'tt.doctor_id')
+    //         ->where('doctor_availability.doctor_id', '=', $request->doctor_id)
+    //         ->where('tt.day', '=', $weekDayName)
+    //         ->select(
+    //             'doctor_availability.doctor_id',
+    //             'doctor_availability.time_of_one_appointment',
+    //             'tt.start_time',
+    //             'tt.end_time',
+    //             'tt.address',
+    //             'tt.timezone',
+    //             'tt.day',
+    //             // 'ap.appointment_date'
+    //         )
+    //         ->get();
+
+    //     $appointments = Appointment::where('doctor_id', $request->doctor_id)
+    //         ->whereDate('appointment_date', $request->date) // Ensures date comparison
+    //         ->get();
+
+
+    //     // Generate schedule
+    //     $schedule = [];
+
+    //     foreach ($doctorSchedules as $scheduleData) {
+    //         $startTimeUTC = Carbon::parse($request->date . ' ' . $scheduleData->start_time, $scheduleData->timezone)->utc();
+    //         $endTimeUTC = Carbon::parse($request->date . ' ' . $scheduleData->end_time, $scheduleData->timezone)->utc();
+    //         $intervalMinutes = $scheduleData->time_of_one_appointment;
+    //         $currentSlot = $startTimeUTC;
+
+    //         while ($currentSlot->copy()->addMinutes($intervalMinutes)->lte($endTimeUTC)) {
+    //             $slotTime = $currentSlot->format('H:i:s');
+
+    //             // Check if doctor is on holiday during this slot
+    //             $doctorOnHoliday = $doctorHolidays->contains(function ($holiday) use ($slotTime) {
+    //                 return $slotTime >= $holiday['start_time'] && $slotTime <= $holiday['end_time'];
+    //             });
+
+    //             // Determine availability
+    //             $isAvailable = !$doctorOnHoliday;
+    //             $doctorHolidayMessage = $doctorOnHoliday ? "Doctor is on holiday during this time." : null;
+
+
+
+    //             if (in_array($currentSlot->format('H:i:s'), $bookedTimes)) {
+    //                 return response()->json([
+    //                     'message' => 'Slot is already booked',
+    //                     'available' => false
+    //                 ], 200);
+    //             } else {
+    //                 return response()->json([
+    //                     'message' => 'Slot is available',
+    //                     'available' => true
+    //                 ], 200);
+    //             }
+
+
+
+    //             // Store slot in schedule
+    //             $schedule[] = [
+    //                 'doctor_id' => $scheduleData->doctor_id,
+    //                 'time' => $currentSlot->toDateTimeString(),
+    //                 'is_available' => $isAvailable,
+    //                 'address' => $scheduleData->address,
+    //                 'timezone' => $scheduleData->timezone,
+    //                 'doctorHolidayMessage' => $doctorHolidayMessage,
+    //             ];
+
+    //             // Move to next slot
+    //             $currentSlot->addMinutes($intervalMinutes);
+    //         }
+    //     }
+
+    //     return response()->json(['schedule' => $appointments]);
+    // }
 
     /**
      * Fetch all health issues of a patient
