@@ -62,9 +62,9 @@ export const SetHoliday = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } },
       );
-      if (response.status === 200) {
+      if (response.status === 201) {
         toast.success("Holiday set successfully");
-        setConfirmed(true);
+        setConfirmed(false);
       }
     } catch (error) {
       toast.error(String(error));
@@ -97,7 +97,7 @@ export const SetHoliday = () => {
             layout
             transition={{ duration: 0.2, ease: "easeOut" }}
           >
-            <Button className="w-full" onClick={saveHoliday}>
+            <Button className="w-full" onClick={() => setConfirmed(!confirmed)}>
               Save
             </Button>
           </motion.div>
@@ -107,7 +107,7 @@ export const SetHoliday = () => {
               animate={{ x: 0 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
             >
-              <Button>
+              <Button onClick={saveHoliday}>
                 <Check />
               </Button>
             </motion.div>

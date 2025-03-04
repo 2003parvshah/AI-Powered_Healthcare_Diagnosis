@@ -19,7 +19,7 @@ export interface DoctorPersonalInfo {
   consultation_fees: number;
   payment_methods_accepted: string;
   time_of_one_appointment: string;
-  online_consultation_availability: boolean;
-  walk_in_availability: boolean;
-  appointment_booking_required: boolean;
+  online_consultation_availability: number;
+  walk_in_availability: number;
+  appointment_booking_required: number;
 }

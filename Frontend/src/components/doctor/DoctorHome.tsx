@@ -53,7 +53,7 @@ export const DoctorHome = () => {
 
   const currentDate = new Date();
   const upcomingAppointments = events?.filter(
-    (appointment) => new Date(appointment.appointment_date) > currentDate,
+    (appointment) => new Date(appointment.appointment_date + "Z") > currentDate,
   );
 
   return (
@@ -61,10 +61,10 @@ export const DoctorHome = () => {
       <Card>
         <CardHeader className="flex flex-row items-center">
           <div className="grid gap-1">
-            <CardTitle>Today's Appointments</CardTitle>
+            <CardTitle>Upcoming Appointments</CardTitle>
             <CardDescription>
               You have {loading ? "..." : upcomingAppointments?.length}{" "}
-              appointments scheduled for today
+              appointments scheduled
             </CardDescription>
           </div>
           <Button asChild size="sm" className="ml-auto gap-1">

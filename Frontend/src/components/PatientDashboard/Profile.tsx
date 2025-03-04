@@ -42,7 +42,7 @@ interface AppointmentInterface {
   appointment_date: string;
   patient_name: string;
   diagnosis: string;
-  name: string;
+  doctor_name: string;
 }
 export const Profile = () => {
   const token = useSelector((state: RootState) => state.auth.token);
@@ -143,11 +143,12 @@ export const Profile = () => {
   const currentDate = new Date();
 
   const upcomingAppointments = appointments.filter(
-    (appointment) => new Date(appointment.appointment_date) > currentDate,
+    (appointment) => new Date(appointment.appointment_date + "Z") > currentDate,
   );
 
   const pastAppointments = appointments.filter(
-    (appointment) => new Date(appointment.appointment_date) <= currentDate,
+    (appointment) =>
+      new Date(appointment.appointment_date + "Z") <= currentDate,
   );
   return (
     <section className="flex max-w-5xl flex-col items-start justify-start space-y-6 p-4">
@@ -440,7 +441,7 @@ export const Profile = () => {
                     </p>
                     <p className="font-medium">{appointment.diagnosis}</p>
                     <p className="text-muted-foreground text-sm">
-                      Doctor ID: {appointment.name}
+                      Doctor ID: {appointment.doctor_name}
                     </p>
                   </div>
                 </div>
@@ -475,7 +476,7 @@ export const Profile = () => {
                         ).toDateString()}
                       </TableCell>
                       <TableCell>{appointment.diagnosis}</TableCell>
-                      <TableCell>{appointment.name}</TableCell>
+                      <TableCell>{appointment.doctor_name}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

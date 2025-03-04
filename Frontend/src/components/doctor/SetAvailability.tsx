@@ -95,8 +95,8 @@ export default function SetAvailability() {
             }
             newSchedule[day].enabled = true;
             newSchedule[day].slots.push({
-              start: start_time,
-              end: end_time,
+              start: start_time.slice(0, -3),
+              end: end_time.slice(0, -3),
               location: address,
             });
           },

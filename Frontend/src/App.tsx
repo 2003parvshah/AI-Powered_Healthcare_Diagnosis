@@ -18,6 +18,7 @@ import { store, persistor } from "@/redux/store";
 import { DoctorProfile } from "./components/doctor/DoctorProfile";
 import { DoctorRegister } from "./pages/DoctorRegister";
 import SetAvailability from "./components/doctor/SetAvailability";
+import { HealthIssues } from "./components/patientDashboard/HealthIssues";
 function App() {
   return (
     <Provider store={store}>
@@ -36,6 +37,7 @@ function App() {
                 {/* <Route path="diagnose" element={< />} /> */}
                 <Route path="profile" element={<Profile />} />
                 <Route path="specialist" element={<Specialist />} />
+                <Route path="health-issues" element={<HealthIssues />} />
               </Route>
             </Route>
             <Route path="doctor" element={<ProtectedRoute role="doctor" />}>

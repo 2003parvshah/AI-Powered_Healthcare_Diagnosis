@@ -245,7 +245,7 @@ export const DoctorProfile = () => {
       const formData = new FormData();
       formData.append(
         "consultation_fees",
-        editFeeData.consultation_fees?.toString() || "",
+        JSON.stringify(editFeeData.consultation_fees) || "",
       );
       formData.append(
         "payment_methods_accepted",
@@ -290,15 +290,15 @@ export const DoctorProfile = () => {
       );
       formData.append(
         "online_consultation_availability",
-        JSON.stringify(editAvailability.online_consultation_availability),
+        JSON.stringify(editAvailability.online_consultation_availability) || "",
       );
       formData.append(
         "walk_in_availability",
-        JSON.stringify(editAvailability.walk_in_availability),
+        JSON.stringify(editAvailability.walk_in_availability) || "",
       );
       formData.append(
         "appointment_booking_required",
-        JSON.stringify(editAvailability.appointment_booking_required),
+        JSON.stringify(editAvailability.appointment_booking_required) || "",
       );
 
       const response = await axios.post(
@@ -852,12 +852,15 @@ export const DoctorProfile = () => {
                           id="online_consultation_availability"
                           checked={
                             editAvailability.online_consultation_availability
+                              ? true
+                              : false
                           }
                           onChange={(e) =>
                             setEditAvailability({
                               ...editAvailability,
-                              online_consultation_availability:
-                                e.target.checked,
+                              online_consultation_availability: e.target.checked
+                                ? 1
+                                : 0,
                             })
                           }
                         />
@@ -869,11 +872,13 @@ export const DoctorProfile = () => {
                         <input
                           type="checkbox"
                           id="walk_in_availability"
-                          checked={editAvailability.walk_in_availability}
+                          checked={
+                            editAvailability.walk_in_availability ? true : false
+                          }
                           onChange={(e) =>
                             setEditAvailability({
                               ...editAvailability,
-                              walk_in_availability: e.target.checked,
+                              walk_in_availability: e.target.checked ? 1 : 0,
                             })
                           }
                         />
@@ -889,11 +894,15 @@ export const DoctorProfile = () => {
                           id="appointment_booking_required"
                           checked={
                             editAvailability.appointment_booking_required
+                              ? true
+                              : false
                           }
                           onChange={(e) =>
                             setEditAvailability({
                               ...editAvailability,
-                              appointment_booking_required: e.target.checked,
+                              appointment_booking_required: e.target.checked
+                                ? 1
+                                : 0,
                             })
                           }
                         />

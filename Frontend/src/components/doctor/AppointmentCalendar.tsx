@@ -20,6 +20,7 @@ interface AppointmentInterface {
   appointment_id: number;
   patient_id: number;
   appointment_date: string;
+  time_of_one_appointment: number;
   patient_name: string;
   diagnosis: string;
 }
@@ -54,10 +55,10 @@ export const AppointmentCalendar = () => {
               start: new Date(appointment.appointment_date + "Z"),
               end: new Date(
                 new Date(appointment.appointment_date + "Z").getTime() +
-                  60 * 60 * 1000,
+                  appointment.time_of_one_appointment * 60 * 1000,
               ), // Assume 1-hour duration
               title: `${appointment.patient_name}`,
-              color: "purple" as "blue",
+              color: "green" as "blue",
             }),
           );
 
@@ -137,7 +138,7 @@ export const AppointmentCalendar = () => {
           </Calendar>
         </div>
       ) : (
-        ""
+        <p>No Appointments booked</p>
       )}
     </>
   );

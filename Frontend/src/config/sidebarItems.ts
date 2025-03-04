@@ -7,6 +7,7 @@ import {
   Clock,
   User,
   Calendar,
+  ClipboardPlus,
 } from "lucide-react";
 
 // Define the type for menu items
@@ -20,6 +21,11 @@ export interface SidebarItem {
 export const sidebarItems: SidebarItem[] = [
   // { title: "Home", url: "/patient", icon: Home },
   { title: "Diagnose", url: "/patient", icon: Activity },
+  {
+    title: "Health Issues",
+    url: "/patient/health-issues",
+    icon: ClipboardPlus,
+  },
   {
     title: "Specialists",
     url: "/patient/specialist",

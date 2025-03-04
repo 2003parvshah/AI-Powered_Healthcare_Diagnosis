@@ -1,87 +1,69 @@
+import { Calendar } from "@/components/ui/calendar";
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
+import { Button } from "../ui/button";
+import { cn } from "@/lib/utils";
 
 interface TimeSlot {
+  start_time: string;
   time: string;
   available: boolean;
+  address: string;
 }
 
-export default function DoctorAvailableTime({
-  doctor_id,
+const DoctorAvailableTime = ({
+  id,
+  onTimeSlotSelect,
+  role,
 }: {
-  doctor_id: number;
-}) {
+  id: number;
+  onTimeSlotSelect: (selectedSlot: string) => void;
+  role: string;
+}) => {
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date(),
+  );
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const token = useSelector((state: RootState) => state.auth.token);
-  const [month, setMonth] = useState(new Date().getMonth()); // 0 - 11
-  const [year, setYear] = useState(new Date().getFullYear());
-  const [selectedDate, setSelectedDate] = useState<number | null>(null);
-  const [calendarDays, setCalendarDays] = useState<
-    Array<{ date: number; day: string; isCurrentMonth: boolean } | null>
-  >([]);
 
-  // Day names for the calendar header
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const handleSelectSlot = (slot: string) => {
+    setSelectedSlot(slot); // Update selected slot
+    onTimeSlotSelect(slot);
+  };
 
-  // Generate calendar days for the current month view
   useEffect(() => {
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const firstDayOfMonth = new Date(year, month, 1).getDay();
-
-    // Create array for the calendar grid
-    const days = [];
-
-    // Add empty cells for days before the first of the month
-    for (let i = 0; i < firstDayOfMonth; i++) {
-      days.push(null);
-    }
-
-    // Add days of the current month
-    for (let i = 1; i <= daysInMonth; i++) {
-      const date = new Date(year, month, i);
-      days.push({
-        date: i,
-        day: date.toLocaleDateString("en-US", { weekday: "short" }),
-        isCurrentMonth: true,
-      });
-    }
-
-    setCalendarDays(days);
-
-    // If no date is selected, select today if it's in the current month view
-    if (selectedDate === null) {
-      const today = new Date();
-      if (today.getMonth() === month && today.getFullYear() === year) {
-        setSelectedDate(today.getDate());
-      } else {
-        setSelectedDate(1);
-      }
-    }
-  }, [month, year, selectedDate]);
-
-  // Fetch time slots when the selected date changes
-  useEffect(() => {
-    if (selectedDate === null) return;
+    if (!selectedDate) return;
 
     const fetchSchedule = async () => {
       try {
-        const formattedDate = `${year}-${String(month + 1).padStart(2, "0")}-${String(selectedDate).padStart(2, "0")}`;
+        const formattedDate = `${selectedDate.getFullYear()}-${String(
+          selectedDate.getMonth() + 1,
+        ).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`;
+
+        console.log(formattedDate);
+
         const response = await axios.post(
-          `${import.meta.env.VITE_BASE_URL}/patient/getdoctors_timetable`,
-          { doctor_id: doctor_id, date: formattedDate },
+          `${import.meta.env.VITE_BASE_URL}/${role}/getdoctors_timetable`,
+          { doctor_id: id, date: formattedDate },
           { headers: { Authorization: `Bearer ${token}` } },
         );
 
         if (response.status === 200) {
           const schedule = response.data.schedule;
           const formattedSlots = schedule.map(
-            (slot: { start_time: string; available: boolean }) => ({
+            (slot: {
+              start_time: string;
+              available: boolean;
+              address: string;
+            }) => ({
               time: new Date(slot.start_time + "Z").toLocaleTimeString(
                 "en-US",
                 {
@@ -90,141 +72,65 @@ export default function DoctorAvailableTime({
                   hour12: true,
                 },
               ),
+              start_time: slot.start_time,
               available: slot.available,
+              address: slot.address,
             }),
           );
           setTimeSlots(formattedSlots);
         }
       } catch (error) {
         console.error("Error fetching schedule:", error);
-        // Fallback with dummy data similar to the reference image
-        // setTimeSlots([
-        //   { time: "06:00 PM", available: false },
-        //   { time: "06:30 PM", available: false },
-        //   { time: "07:00 PM", available: true },
-        //   { time: "07:30 PM", available: false },
-        //   { time: "08:00 PM", available: true },
-        //   { time: "08:30 PM", available: false },
-        //   { time: "09:00 PM", available: false },
-        //   { time: "10:00 PM", available: true },
-        // ]);
       }
     };
 
     fetchSchedule();
-  }, [selectedDate, month, year, token, doctor_id]);
-
-  const getMonthName = () => {
-    return new Date(year, month).toLocaleDateString("en-US", { month: "long" });
-  };
+  }, [id, role, selectedDate, token]);
 
   return (
-    <Card className="mx-auto w-full rounded-lg border-0 shadow-sm">
-      <CardContent className="p-6">
-        {/* Month and Navigation */}
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-semibold">{getMonthName()}</h2>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-10 w-10 rounded-full"
-              onClick={() => {
-                if (month === 0) {
-                  setMonth(11);
-                  setYear(year - 1);
-                } else {
-                  setMonth(month - 1);
-                }
-              }}
-            >
-              <ChevronLeft className="h-5 w-5" />
-              <span className="sr-only">Previous month</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-10 w-10 rounded-full"
-              onClick={() => {
-                if (month === 11) {
-                  setMonth(0);
-                  setYear(year + 1);
-                } else {
-                  setMonth(month + 1);
-                }
-              }}
-            >
-              <ChevronRight className="h-5 w-5" />
-              <span className="sr-only">Next month</span>
-            </Button>
-          </div>
-        </div>
-
-        {/* Calendar - Day Names */}
-        <div className="mb-2 grid grid-cols-7 gap-1">
-          {dayNames.map((day) => (
-            <div key={day} className="text-center font-medium text-gray-500">
-              {day}
-            </div>
-          ))}
-        </div>
-
-        {/* Calendar - Date Grid */}
-        <div className="mb-8 grid grid-cols-7 gap-1">
-          {calendarDays.map((day, index) =>
-            day ? (
-              <Button
-                key={index}
-                variant={selectedDate === day.date ? "default" : "ghost"}
-                className={cn(
-                  "flex h-12 w-full items-center justify-center rounded-md",
-                  selectedDate === day.date
-                    ? "bg-blue-500 text-white"
-                    : "hover:bg-gray-100",
-                )}
-                onClick={() => setSelectedDate(day.date)}
-              >
-                {day.date}
-              </Button>
-            ) : (
-              <div key={index} className="h-12 w-full"></div>
-            ),
-          )}
-        </div>
-
-        {/* Available Time Slots */}
-        <div className="grid grid-cols-4 gap-3">
-          {timeSlots.map((slot, index) => (
+    <div>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button className="my-4" variant="outline">
+            {selectedDate?.toDateString()}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent>
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={setSelectedDate}
+            className="w-full rounded-md border shadow"
+          />
+        </PopoverContent>
+      </Popover>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:min-w-md">
+        {timeSlots.length !== 0 ? (
+          timeSlots.map((slot, index) => (
             <Button
               key={index}
-              variant={slot.available ? "outline" : "ghost"}
+              variant={slot.start_time === selectedSlot ? "default" : "outline"} // Primary when selected
+              onClick={() => handleSelectSlot(slot.start_time)}
               className={cn(
-                "h-12 rounded-md border",
+                "flex h-12 flex-col overflow-hidden rounded-md border p-4 text-ellipsis transition",
                 slot.available
-                  ? "border-gray-200 text-gray-900 hover:border-blue-500"
-                  : "cursor-not-allowed text-gray-300",
+                  ? slot.start_time === selectedSlot
+                    ? "border-blue-500 bg-blue-500 text-white hover:bg-blue-600" // Highlight selected slot
+                    : "border-gray-200 text-gray-900 hover:border-blue-500"
+                  : "text-muted-foreground cursor-not-allowed opacity-50",
               )}
               disabled={!slot.available}
             >
-              {slot.time}
+              <p>{slot.time}</p>
+              <p className="text-xs font-normal">{slot.address}</p>
             </Button>
-          ))}
-        </div>
-
-        {/* View All Availability */}
-        {/* <div className="mt-6">
-          <Button
-            variant="ghost"
-            className="w-full justify-between font-medium text-gray-700"
-            asChild
-          >
-            <a href="#">
-              View all availability
-              <ChevronRight className="h-5 w-5" />
-            </a>
-          </Button>
-        </div> */}
-      </CardContent>
-    </Card>
+          ))
+        ) : (
+          <p className="col-span-full">No time slots available</p>
+        )}
+      </div>
+    </div>
   );
-}
+};
+
+export default DoctorAvailableTime;
