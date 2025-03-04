@@ -32,27 +32,27 @@ class HealthIssueController extends Controller
     public function addHealthIssue(Request $request)
     {
         $request->validate([
-            'symptoms' => 'required|string',
+            // 'symptoms' => 'required|string',
             'report_pdf' => 'nullable|file|mimes:pdf|max:2048',
             'report_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'doctor_type' => 'required|string',
+            // 'doctor_type' => 'required|string',
             'other_info' => 'nullable|string',
         ]);
 
         $user = JWTAuth::parseToken()->authenticate();
 
-        // Check if this health issue already exists
-        $existingIssue = HealthIssue::where('patient_id', $user->id)
-            ->where('symptoms', $request->symptoms)
-            ->first();
+        // // Check if this health issue already exists
+        // $existingIssue = HealthIssue::where('patient_id', $user->id)
+        //     ->where('symptoms', $request->symptoms)
+        //     ->first();
 
-        // If existing, return stored data
-        if ($existingIssue) {
-            return response()->json([
-                'message' => 'Existing health issue retrieved successfully',
-                'data' => $existingIssue,
-            ], 200);
-        }
+        // // If existing, return stored data
+        // if ($existingIssue) {
+        //     return response()->json([
+        //         'message' => 'Existing health issue retrieved successfully',
+        //         'data' => $existingIssue,
+        //     ], 200);
+        // }
 
         // Handle PDF upload
         $reportPdf = $request->file('report_pdf');
@@ -65,8 +65,8 @@ class HealthIssueController extends Controller
         $imageData = $reportimagestatus ? $reportimagestatus->getData(true) : null;
 
         // API Base URLs from .env
-        $textApiUrl = env('TEXT_PREDICTION_API', 'http://13.126.13.196:8000/predict');
-        $imageApiUrl = env('IMAGE_PREDICTION_API', 'http://13.127.245.150:8000/predict_image');
+        $textApiUrl = env('SYMPTOMS_API_URL', 'http://13.126.13.196:8000/predict');
+        $imageApiUrl = env('IMAGE_API_URL', 'http://13.127.245.150:8000/predict_image');
 
         // Initialize diagnosis & solution
         $diagnosis = null;
@@ -79,8 +79,8 @@ class HealthIssueController extends Controller
             ])->json();
 
             // Extract diagnosis and solution from API response
-            $diagnosis = $textPredictionResponse['diagnosis'] ?? null;
-            $solution = $textPredictionResponse['solution'] ?? null;
+            $diagnosis = $textPredictionResponse['predicted_disease'] ?? null;
+            // $solution = $textPredictionResponse['solution'] ?? null;
 
             // 2. Call image-based prediction API (if image exists)
             if ($reportImage) {
@@ -88,11 +88,13 @@ class HealthIssueController extends Controller
                     'file',
                     file_get_contents($reportImage->getRealPath()),
                     $reportImage->getClientOriginalName()
-                )->post("$imageApiUrl?model_type=mri")->json();
+                )->post("$imageApiUrl?task=" . $request->report_image_type)->json();
+
 
                 // If image API returns a diagnosis or solution, use it (optional)
-                $diagnosis = $imagePredictionResponse['diagnosis'] ?? $diagnosis;
-                $solution = $imagePredictionResponse['solution'] ?? $solution;
+                // $diagnosis = $imagePredictionResponse['diagnosis'] ?? $diagnosis;
+                // $solution = $imagePredictionResponse['prediction'] ?? $solution;
+                $solution = json_encode($imagePredictionResponse);
             }
         } catch (\Exception $e) {
             Log::error('API Call Failed', ['error' => $e->getMessage()]);
@@ -113,14 +115,47 @@ class HealthIssueController extends Controller
         return response()->json([
             'message' => 'Health issue recorded successfully',
             'data' => $healthIssue,
+            'd api' => $textPredictionResponse,
+            'v api' => $solution,
+
         ], 201);
     }
 
+
+    public function getPatientHealthIssues()
+    {
+        try {
+            // Get authenticated user
+            // $user = auth()->user();
+            $user = JWTAuth::parseToken()->authenticate();
+
+
+            if (!$user) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
+
+            // Fetch health issues for the patient
+            $healthIssues = HealthIssue::where('patient_id', $user->id)->get();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $healthIssues
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Something went wrong!'], 500);
+        }
+    }
 
 
 
     public function getdoctors_timetable(Request $request)
     {
+
+        $doctor_id = $request->doctor_id;
+        $user = JWTAuth::parseToken()->authenticate();
+        if ($user->role == "doctor") {
+            $doctor_id = $user->id;
+        }
         // Authenticate doctor using JWT
         // $user = JWTAuth::parseToken()->authenticate();
         $requestedDate = Carbon::parse($request->date);
@@ -128,7 +163,7 @@ class HealthIssueController extends Controller
         $targetDate = $request->date;
         $doctorHolidays = DoctorHoliday::whereDate('start_date', '<=', $targetDate)
             ->whereDate('end_date', '>=', $targetDate)
-            ->where('doctor_id', '=', $request->doctor_id)
+            ->where('doctor_id', '=', $doctor_id)
             ->get(['id', 'doctor_id', 'start_date', 'end_date', 'byDoctor', 'timezone', 'created_at', 'updated_at'])
             ->map(function ($holiday) use ($targetDate) {
                 return [
@@ -157,7 +192,7 @@ class HealthIssueController extends Controller
 
 
         $doctorSchedules = DoctorAvailability::join('doctor_timeTable as tt', 'doctor_availability.doctor_id', '=', 'tt.doctor_id')
-            ->where('doctor_availability.doctor_id', '=', $request->doctor_id)
+            ->where('doctor_availability.doctor_id', '=', $doctor_id)
             ->where('tt.day', '=', $weekDayName)
             ->select(
                 'doctor_availability.doctor_id',
@@ -171,7 +206,7 @@ class HealthIssueController extends Controller
             )
             ->get();
 
-        $appointments = Appointment::where('doctor_id', $request->doctor_id)
+        $appointments = Appointment::where('doctor_id', $doctor_id)
             ->whereDate('appointment_date', $request->date) // Ensures date comparison
             ->get();
         $bookedTimes = $appointments->map(function ($appointment) {
@@ -365,9 +400,9 @@ class HealthIssueController extends Controller
     /**
      * Fetch all health issues of a patient
      */
-    public function getPatientHealthIssues($patientId)
-    {
-        $healthIssues = HealthIssue::where('patient_id', $patientId)->get();
-        return response()->json($healthIssues);
-    }
+    // public function getPatientHealthIssues($patientId)
+    // {
+    //     $healthIssues = HealthIssue::where('patient_id', $patientId)->get();
+    //     return response()->json($healthIssues);
+    // }
 }

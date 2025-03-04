@@ -30,6 +30,7 @@ use App\Http\helper\cloudinaryClass;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsDoctor;
 use App\Http\Middleware\IsPatient;
+use App\Models\HealthIssue;
 use Illuminate\Support\Facades\Validator; // Add this if using manual validation
 
 
@@ -146,6 +147,7 @@ Route::middleware('jwt.auth')->group(function () {
         Route::post('setHoliday', [DoctorHolidayController::class, 'setHoliday']);
         Route::get('getHoliday', [DoctorHolidayController::class, 'getHoliday']);
         Route::post('setAppointment', [AppointmentController::class, 'setAppointment']);
+        Route::post('getdoctors_timetable', [HealthIssueController::class, 'getdoctors_timetable']);
     });
 
     // patient-only routes
@@ -160,5 +162,6 @@ Route::middleware('jwt.auth')->group(function () {
         Route::post('setAppointment', [AppointmentController::class, 'setAppointment']);
         Route::post('getAllInfoDoctors', [DoctorController::class, 'getAllInfoDoctors']);
         Route::get('getAppointments', [AppointmentController::class, 'getAppointments']);
+        Route::get('getPatientHealthIssues', [HealthIssueController::class, 'getPatientHealthIssues']);
     });
 });

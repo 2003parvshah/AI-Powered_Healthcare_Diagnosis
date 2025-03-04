@@ -118,6 +118,8 @@ class AppointmentController extends Controller
     {
         $appointments = Appointment::join('health_issues as hi', 'appointments.health_issues_id', '=', 'hi.id')
             ->join('users as u', 'hi.patient_id', '=', 'u.id')
+            // ->join('doctor_availability', 'users', '=', 'u.id')
+            ->join('doctor_availability as da', 'appointments.doctor_id', '=', 'da.doctor_id')
             ->where('appointments.doctor_id', $doctorId)
             ->select(
                 'appointments.id as appointment_id',
@@ -125,7 +127,8 @@ class AppointmentController extends Controller
                 'u.name as patient_name',
                 'u.id as patient_id',
                 'hi.diagnosis',
-                'appointments.doctor_id'
+                'appointments.doctor_id',
+                'da.time_of_one_appointment'
             )
             ->orderBy('appointments.health_issues_id', 'desc')
             ->get();
@@ -140,10 +143,14 @@ class AppointmentController extends Controller
     // Store a new appointment
     public function setAppointment(Request $request)
     {
+        $doctor_id = $request->doctor_id;
         $user = JWTAuth::parseToken()->authenticate();
+        if ($user->role == "doctor") {
+            $doctor_id = $user->id;
+        }
         $appointment = Appointment::create([
             // 'patient_id' => $user->id,
-            'doctor_id' => $request->doctor_id,
+            'doctor_id' => $doctor_id,
             'health_issues_id' => $request->health_issues_id,
             'appointment_date' => Carbon::parse($request->appointment_date, $request->header('Timezone'))->utc(),
 

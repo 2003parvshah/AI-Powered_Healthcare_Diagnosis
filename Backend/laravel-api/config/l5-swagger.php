@@ -1,4 +1,5 @@
 <?php
+
 use OpenApi\Annotations as OA;
 
 /**
@@ -128,8 +129,8 @@ return [
              * @link https://zircote.github.io/swagger-php/reference/processors.html
              */
             'default_processors_configuration' => [
-            /** Example */
-            /**
+                /** Example */
+                /**
              * 'operationId.hash' => true,
              * 'pathFilter' => [
              * 'tags' => [
@@ -171,10 +172,10 @@ return [
              */
             'pattern' => null,
 
-           
+
             'exclude' => [],
 
-      
+
             'open_api_spec_version' => env('L5_SWAGGER_OPEN_API_SPEC_VERSION', \L5Swagger\Generator::OPEN_API_DEFAULT_SPEC_VERSION),
         ],
 
@@ -182,14 +183,10 @@ return [
          * API security definitions. Will be generated into documentation file.
         */
         'securityDefinitions' => [
-            'securitySchemes' => [
-            
-            ],
+            'securitySchemes' => [],
             'security' => [
-             
-                [
-             
-                ],
+
+                [],
             ],
         ],
 
@@ -216,12 +213,12 @@ return [
          */
         'additional_config_url' => null,
 
-     
+
         'operations_sort' => env('L5_SWAGGER_OPERATIONS_SORT', null),
 
         'validator_url' => null,
 
-    
+
         'ui' => [
             'display' => [
                 'dark_mode' => env('L5_SWAGGER_UI_DARK_MODE', false),
@@ -230,7 +227,7 @@ return [
                  */
                 'doc_expansion' => env('L5_SWAGGER_UI_DOC_EXPANSION', 'none'),
 
-            
+
                 'filter' => env('L5_SWAGGER_UI_FILTERS', true), // true | false
             ],
 

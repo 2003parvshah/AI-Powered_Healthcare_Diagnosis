@@ -87,11 +87,17 @@ php artisan db:seed --class=DoctorAvailabilitySeeder
 
 cd /var/www/html/AI-Powered_Healthcare_Diagnosis/AI/"Symptoms Analyzer"
 source ../venv/bin/activate
-uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+uvicorn app:app --host 0.0.0.0 --port 8002 --reload 
  // druvpal
 
-uvicorn brain_lung_classifier:app --host 0.0.0.0 --port 8000 --reload
+
+cd /var/www/html/AI-Powered_Healthcare_Diagnosis/AI/'MRI and XRAY classifier'
+source ../venv/bin/activate
+uvicorn brain_lung_classifier:app --host 0.0.0.0 --port 8001 --reload
 // vivek
 
 
+
+source venv/bin/activate
+ uvicorn medical_disease_api:app --host 0.0.0.0 --port 8002 --reload
 

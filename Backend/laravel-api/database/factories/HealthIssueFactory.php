@@ -16,8 +16,8 @@ class HealthIssueFactory extends Factory
         return [
             'patient_id' => Patient::factory(),
             'diagnosis' => $this->faker->sentence(),
-            'solution_description' => $this->faker->paragraph(),
-            'symptom_description' => $this->faker->paragraph(),
+            'solution' => $this->faker->paragraph(),
+            'symptoms' => $this->faker->paragraph(),
         ];
     }
 }
