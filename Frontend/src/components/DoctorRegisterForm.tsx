@@ -134,7 +134,7 @@ export function DoctorRegisterForm({
                 <Input
                   id="name"
                   type="text"
-                  placeholder="Narendra Modi"
+                  placeholder="Enter Name"
                   required
                   value={formData.name}
                   onChange={handleChange}
@@ -173,7 +173,7 @@ export function DoctorRegisterForm({
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Male" />
+                      <SelectValue placeholder="Select Gender" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="male">Male</SelectItem>

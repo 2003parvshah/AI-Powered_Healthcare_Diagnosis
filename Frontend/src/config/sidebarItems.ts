@@ -6,6 +6,8 @@ import {
   BriefcaseMedical,
   Clock,
   User,
+  Calendar,
+  ClipboardPlus,
 } from "lucide-react";
 
 // Define the type for menu items
@@ -20,6 +22,11 @@ export const sidebarItems: SidebarItem[] = [
   // { title: "Home", url: "/patient", icon: Home },
   { title: "Diagnose", url: "/patient", icon: Activity },
   {
+    title: "Health Issues",
+    url: "/patient/health-issues",
+    icon: ClipboardPlus,
+  },
+  {
     title: "Specialists",
     url: "/patient/specialist",
     icon: BriefcaseMedical,
@@ -28,7 +35,7 @@ export const sidebarItems: SidebarItem[] = [
 ];
 export const doctorSidebarItems: SidebarItem[] = [
   { title: "Home", url: "/doctor", icon: Home },
-  { title: "Appointments", url: "/doctor/appointments", icon: Activity },
+  { title: "Appointments", url: "/doctor/appointments", icon: Calendar },
   { title: "Set Availability", url: "/doctor/set-availability", icon: Clock },
   { title: "Profile", url: "/doctor/profile", icon: User },
 ];

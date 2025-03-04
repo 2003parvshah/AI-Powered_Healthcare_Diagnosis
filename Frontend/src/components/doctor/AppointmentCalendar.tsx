@@ -18,8 +18,9 @@ import { toast } from "sonner";
 
 interface AppointmentInterface {
   appointment_id: number;
-  id: number;
+  patient_id: number;
   appointment_date: string;
+  time_of_one_appointment: number;
   patient_name: string;
   diagnosis: string;
 }
@@ -50,19 +51,18 @@ export const AppointmentCalendar = () => {
 
           const updatedEvents: CalendarEvent[] = fetchedAppointments.map(
             (appointment: AppointmentInterface): CalendarEvent => ({
-              id: appointment.id.toString(),
+              id: appointment.patient_id.toString(),
               start: new Date(appointment.appointment_date + "Z"),
               end: new Date(
                 new Date(appointment.appointment_date + "Z").getTime() +
-                  60 * 60 * 1000,
+                  appointment.time_of_one_appointment * 60 * 1000,
               ), // Assume 1-hour duration
               title: `${appointment.patient_name}`,
-              color: "purple" as "blue",
+              color: "green" as "blue",
             }),
           );
 
           setEvents(updatedEvents);
-          toast.success("Fetched Appoinments");
           if (updatedEvents.length == 0) {
             toast.warning("No appoinments");
           }
@@ -88,7 +88,7 @@ export const AppointmentCalendar = () => {
   return (
     <>
       {events.length > 0 ? (
-        <div className="min-w-lg overflow-scroll">
+        <div className="overflow-scroll">
           <Calendar events={events}>
             <div className="flex h-dvh flex-col py-6">
               <div className="mb-6 flex flex-col items-start justify-between gap-2 px-6 sm:flex-row">
@@ -129,7 +129,7 @@ export const AppointmentCalendar = () => {
                 </div>
               </div>
 
-              <div className="relative min-w-lg flex-1 overflow-auto px-6">
+              <div className="relative flex-1 overflow-auto px-6">
                 <CalendarDayView />
                 <CalendarWeekView />
                 <CalendarMonthView />
@@ -138,7 +138,7 @@ export const AppointmentCalendar = () => {
           </Calendar>
         </div>
       ) : (
-        ""
+        <p>No Appointments booked</p>
       )}
     </>
   );

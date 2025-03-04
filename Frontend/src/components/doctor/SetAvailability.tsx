@@ -95,8 +95,8 @@ export default function SetAvailability() {
             }
             newSchedule[day].enabled = true;
             newSchedule[day].slots.push({
-              start: start_time,
-              end: end_time,
+              start: start_time.slice(0, -3),
+              end: end_time.slice(0, -3),
               location: address,
             });
           },
@@ -184,9 +184,9 @@ export default function SetAvailability() {
         },
       );
       console.log(response);
-
-      //   if (!response.status) throw new Error("Failed to save schedule");
-      toast.success("Schedule saved successfully!");
+      if (response.status === 201) {
+        toast.success("Schedule saved successfully!");
+      }
     } catch (error) {
       console.error(error);
       alert("Error saving schedule");
@@ -195,16 +195,27 @@ export default function SetAvailability() {
 
   return (
     <>
-      <div className="mx-auto rounded-xl border bg-white p-6 shadow-sm">
-        <div className="mb-6 flex justify-between">
-          <h2 className="text-xl font-semibold">Set Availability</h2>
-          <Button onClick={saveSchedule}>Save</Button>
+      <div className="mx-auto rounded-xl border bg-white p-4 shadow-sm sm:p-6">
+        {/* Header */}
+        <div className="mb-4 flex flex-col sm:flex-row sm:justify-between">
+          <h2 className="text-lg font-semibold sm:text-xl">Set Availability</h2>
+          <Button
+            onClick={saveSchedule}
+            className="mt-2 w-full sm:mt-0 sm:w-auto"
+          >
+            Save
+          </Button>
         </div>
 
+        {/* Days List */}
         <div className="space-y-4">
           {Object.entries(schedule).map(([day, { enabled, slots }]) => (
-            <div key={day} className="flex items-center gap-4">
-              <div className="w-24">
+            <div
+              key={day}
+              className="flex flex-col items-start gap-4 sm:flex-row sm:items-center"
+            >
+              {/* Checkbox & Day Name */}
+              <div className="flex w-full items-center sm:w-24">
                 <Checkbox
                   checked={enabled}
                   onCheckedChange={() => toggleDay(day)}
@@ -217,7 +228,9 @@ export default function SetAvailability() {
                   {day}
                 </label>
               </div>
-              <div className="flex-1">
+
+              {/* Slots */}
+              <div className="w-full flex-1">
                 {!enabled ? (
                   <div className="text-sm text-gray-500">Unavailable</div>
                 ) : (
@@ -225,7 +238,7 @@ export default function SetAvailability() {
                     {slots.map((slot, index) => (
                       <div
                         key={index}
-                        className="flex flex-wrap items-center gap-2"
+                        className="flex flex-wrap items-center gap-2 sm:flex-nowrap"
                       >
                         <input
                           type="time"
@@ -233,7 +246,7 @@ export default function SetAvailability() {
                           onChange={(e) =>
                             updateTimeSlot(day, index, "start", e.target.value)
                           }
-                          className="rounded border px-2 py-1 text-sm"
+                          className="w-full rounded border px-2 py-1 text-sm sm:w-auto"
                         />
                         <span>-</span>
                         <input
@@ -242,7 +255,7 @@ export default function SetAvailability() {
                           onChange={(e) =>
                             updateTimeSlot(day, index, "end", e.target.value)
                           }
-                          className="rounded border px-2 py-1 text-sm"
+                          className="w-full rounded border px-2 py-1 text-sm sm:w-auto"
                         />
                         <input
                           type="text"
@@ -256,7 +269,7 @@ export default function SetAvailability() {
                             )
                           }
                           placeholder="Location"
-                          className="flex-grow rounded border px-2 py-1 text-sm"
+                          className="w-full flex-grow rounded border px-2 py-1 text-sm"
                         />
                         <button
                           onClick={() => removeTimeSlot(day, index)}
@@ -269,6 +282,8 @@ export default function SetAvailability() {
                   </div>
                 )}
               </div>
+
+              {/* Add Slot Button */}
               <Button
                 variant="ghost"
                 size="icon"

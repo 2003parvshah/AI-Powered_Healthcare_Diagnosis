@@ -26,6 +26,7 @@ export function NavUser() {
   const navigate = useNavigate(); // Initialize navigation
   // const { logout, user } = useAuth();
   const user = useSelector((state: RootState) => state.auth.user);
+
   const dispatch = useDispatch();
   // const  = JSON.parse(localStorage.getItem("user") || "{}");
   const handleLogout = () => {
@@ -43,9 +44,16 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer"
             >
               <Avatar className="h-8 w-8">
-                <AvatarImage src="#" alt="Avatar" />
-                <AvatarFallback className="bg-transparent">
-                  {/* {user?.name[0]} */}
+                <AvatarImage
+                  src={
+                    typeof user?.profile_photo === "string"
+                      ? user.profile_photo
+                      : undefined
+                  }
+                  alt="Avatar"
+                />
+                <AvatarFallback className="">
+                  {user?.name.toUpperCase()[0]}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -64,9 +72,16 @@ export function NavUser() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="#" alt="Avatar" />
-                  <AvatarFallback className="bg-transparent">
-                    {/* {user?.name[0]} */}
+                  <AvatarImage
+                    src={
+                      typeof user?.profile_photo === "string"
+                        ? user.profile_photo
+                        : undefined
+                    }
+                    alt="Avatar"
+                  />
+                  <AvatarFallback className="">
+                    {user?.name.toUpperCase()[0]}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">

@@ -117,7 +117,7 @@ export function RegisterForm({ className, ...props }: { className?: string }) {
                 <Input
                   id="name"
                   type="text"
-                  placeholder="Narendra Modi"
+                  placeholder="Enter Name"
                   required
                   value={formData.name}
                   onChange={handleChange}
@@ -128,7 +128,7 @@ export function RegisterForm({ className, ...props }: { className?: string }) {
                   <Label htmlFor="gender">Gender</Label>
                   <Select onValueChange={handleSelectChange}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Male" />
+                      <SelectValue placeholder="Select Gender" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="male">Male</SelectItem>
