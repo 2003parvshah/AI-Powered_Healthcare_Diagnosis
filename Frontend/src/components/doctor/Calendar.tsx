@@ -234,7 +234,7 @@ const EventGroup = ({
                   {event.title}
                 </Button>
               </SheetTrigger>
-              <SheetContent className="w-4/12 overflow-y-auto sm:max-w-auto">
+              <SheetContent className="w-sm overflow-y-auto sm:w-auto">
                 <SheetHeader>
                   <SheetTitle></SheetTitle>
                   <SheetDescription className="text-foreground"></SheetDescription>
