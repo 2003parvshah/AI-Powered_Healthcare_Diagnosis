@@ -54,7 +54,8 @@ class Doctor_timeTableController extends Controller
             'timings.*.end_time' => 'required|date_format:H:i|after:timings.*.start_time',
             'timings.*.location' => 'required|string',
         ]);
-
+        // DB::delete("DELETE FROM doctor_timeTable WHERE doctor_id = ?", [$doctorId]);
+        Doctor_timeTable::where('doctor_id', $doctorId)->delete();
         $timezone = $request->header('Timezone', 'Asia/Kolkata'); // Default to IST if not provided
 
         if (!in_array($timezone, timezone_identifiers_list())) {

@@ -30,6 +30,7 @@ use App\Http\helper\cloudinaryClass;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsDoctor;
 use App\Http\Middleware\IsPatient;
+use App\Models\HealthIssue;
 use Illuminate\Support\Facades\Validator; // Add this if using manual validation
 
 
@@ -104,7 +105,7 @@ Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout']);
 Route::post('logout_all', [AuthController::class, 'logout_all']);
-Route::post('profile', [AuthController::class, 'profile']);
+// Route::post('profile', [AuthController::class, 'profile']);
 Route::post('generateOtp', [AuthController::class, 'generateOtp']);
 Route::post('verifyOtp', [AuthController::class, 'verifyOtp']);
 Route::post('showAllSession', [AuthController::class, 'showAllSession']);
@@ -116,12 +117,12 @@ Route::post('showAllSession', [AuthController::class, 'showAllSession']);
 
 Route::middleware('jwt.auth')->group(function () {
     // Routes that can be accessed by any authenticated user
-    Route::get('profile', [AuthController::class, 'profile']);  // Example route to show user profile
+    // Route::get('profile', [AuthController::class, 'profile']);  // Example route to show user profile
 
     // Admin-only routes
-    Route::middleware('isAdmin')->group(function () {
-        // Route::get('admin/dashboard', [AdminController::class, 'dashboard']);  // Admin dashboard
-    });
+    // Route::middleware('isAdmin')->group(function () {
+    //     // Route::get('admin/dashboard', [AdminController::class, 'dashboard']);  // Admin dashboard
+    // });
 
     // Doctor-only routes
     Route::middleware('auth:api', 'isDoctor')->prefix('doctor')->group(function () {
@@ -145,6 +146,8 @@ Route::middleware('jwt.auth')->group(function () {
         Route::post('getPatientWithHealthIssues', [DoctorPatientController::class, 'getPatientWithHealthIssues']);
         Route::post('setHoliday', [DoctorHolidayController::class, 'setHoliday']);
         Route::get('getHoliday', [DoctorHolidayController::class, 'getHoliday']);
+        Route::post('setAppointment', [AppointmentController::class, 'setAppointment']);
+        Route::post('getdoctors_timetable', [HealthIssueController::class, 'getdoctors_timetable']);
     });
 
     // patient-only routes
@@ -159,5 +162,6 @@ Route::middleware('jwt.auth')->group(function () {
         Route::post('setAppointment', [AppointmentController::class, 'setAppointment']);
         Route::post('getAllInfoDoctors', [DoctorController::class, 'getAllInfoDoctors']);
         Route::get('getAppointments', [AppointmentController::class, 'getAppointments']);
+        Route::get('getPatientHealthIssues', [HealthIssueController::class, 'getPatientHealthIssues']);
     });
 });

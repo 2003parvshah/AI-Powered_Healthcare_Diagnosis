@@ -14,10 +14,11 @@ class HealthIssue extends Model
     protected $fillable = [
         'patient_id',
         'diagnosis',
-        'solution_description',
-        'symptom_description',
+        'solution',
+        'symptoms',
         'report_pdf',
-        'report_image'
+        'report_image',
+
     ];
 
 

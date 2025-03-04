@@ -17,11 +17,11 @@ class DoctorAvailabilityController extends Controller
         // Validate incoming data
         $request->validate([
             // 'doctor_id' => 'required|exists:doctors,id',
-            'consultation_hours' => 'required|string',
-            'online_consultation_availability' => 'required|boolean',
-            'walk_in_availability' => 'required|boolean',
-            'appointment_booking_required' => 'required|boolean',
-            'time_of_one_appointment' => 'required|integer',
+            // 'consultation_hours' => 'required|string',
+            // 'online_consultation_availability' => 'required|boolean',
+            // 'walk_in_availability' => 'required|boolean',
+            // 'appointment_booking_required' => 'required|boolean',
+            // 'time_of_one_appointment' => 'required|integer',
         ]);
 
         // Create or update doctor availability

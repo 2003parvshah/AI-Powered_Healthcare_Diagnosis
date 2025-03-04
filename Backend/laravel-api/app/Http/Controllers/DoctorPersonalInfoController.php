@@ -14,15 +14,6 @@ class DoctorPersonalInfoController extends Controller
     // ✅ Store (Set Data)
     public function setDoctorPersonalInfo(Request $request)
     {
-        // Validate incoming data
-        // $request->validate([
-        //     'name' => 'required|string|max:255',
-        //     'date_of_birth' => 'required|date',
-        //     'gender' => 'required|in:male,female,other',
-        //     'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Image validation
-        //     'nationality' => 'required|string|max:100',
-        //     'languages_spoken' => 'required|string',
-        // ]);
 
         // Authenticate user
         $user = JWTAuth::parseToken()->authenticate();
@@ -55,33 +46,36 @@ class DoctorPersonalInfoController extends Controller
         if ($request->hasFile('profile_photo')) {
             $image = $request->file('profile_photo');
 
-            // Upload to Cloudinary
-            $uploadResponse = cloudinaryClass::uploadimg($image);
-            $uploadData = json_decode($uploadResponse->getContent(), true);
+            // Get current doctor's existing personal info (if any)
+            $personalInfo = DoctorPersonalInfo::where('doctor_id', $user->id)->first();
+            $oldProfilePhoto = $personalInfo->profile_photo ?? null;
 
-            // if (isset($uploadData['url'])) {
-            //     $doctor->profile_photo = $uploadData['url'];
-            // }
+            // Upload new image to Cloudinary
+            $uploadResponse = cloudinaryClass::uploadimg($image);
+            $uploadData = json_decode($uploadResponse->getContent(), true) ?? [];
+
+            if (isset($uploadData['url'])) {
+                // Delete the old profile photo if it exists
+                if ($oldProfilePhoto) {
+                    cloudinaryClass::deleteByUrl($oldProfilePhoto);
+                }
+            }
         }
 
+        // Determine the profile photo (keep existing if no new upload)
+        $profilePhoto = $uploadData['url'] ?? ($personalInfo->profile_photo ?? null);
+
+        // Update or create doctor personal info
         $personalInfo = DoctorPersonalInfo::updateOrCreate(
             ['doctor_id' => $user->id], // Find by doctor_id
             [
-                // 'full_name' => $request->full_name,
                 'date_of_birth' => $request->date_of_birth,
                 'gender' => $request->gender,
-                'profile_photo' => $uploadData['url'] ?? null, // Store image URL
+                'profile_photo' => $profilePhoto, // Store new image or keep existing one
                 'nationality' => $request->nationality,
                 'languages_spoken' => $request->languages_spoken,
             ]
         );
-
-        // return response()->json([
-        //     'message' => 'Doctor personal info updated successfully!',
-        //     'data' => $personalInfo,
-        //     'user' => $user,
-        //     'doctor' => $doctor,
-        // ], 201);
 
 
         return response()->json([

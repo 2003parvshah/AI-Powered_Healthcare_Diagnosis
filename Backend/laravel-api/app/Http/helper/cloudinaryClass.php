@@ -196,4 +196,24 @@ class cloudinaryClass
             return response()->json(['error' => 'Delete failed'], 500);
         }
     }
+
+
+    public static function deleteByUrl($imageUrl)
+    {
+        try {
+            // Extract public ID from the Cloudinary URL
+            $parsedUrl = parse_url($imageUrl, PHP_URL_PATH);
+            $pathParts = explode('/', $parsedUrl);
+            $fileNameWithExt = end($pathParts);
+            $publicId = pathinfo($fileNameWithExt, PATHINFO_FILENAME); // Remove file extension
+
+            // Call Cloudinary delete function
+            Cloudinary::destroy($publicId);
+
+            return response()->json(['message' => 'Image deleted successfully'], 200);
+        } catch (\Exception $e) {
+            Log::error('Cloudinary Delete Error', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Delete failed'], 500);
+        }
+    }
 }

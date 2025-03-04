@@ -49,6 +49,8 @@ class AuthController extends Controller
             ]);
             DoctorPersonalInfo::create([
                 'doctor_id' => $user->id,
+                'date_of_birth' => $request->date_of_birth,
+                'gender' => $request->gender,
             ]);
         } elseif ($request->role === 'patient') {
             Patient::create([
@@ -77,6 +79,45 @@ class AuthController extends Controller
         return response()->json(['user' => $user, 'token' => $token], 201);
     }
 
+
+
+
+
+
+
+
+
+
+
+    /**
+     * @OA\Post(
+     *     path="/api/login",
+     *     summary="patient Login",
+     *     tags={"Authentication"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email","password"},
+     *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
+     *             @OA\Property(property="password", type="string", format="password", example="password123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful login",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="token", type="string", example="jwt_token_here"),
+     *             @OA\Property(property="user", type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="John Doe"),
+     *                 @OA\Property(property="email", type="string", example="john@example.com")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthorized"),
+     *     security={{"bearerAuth":{}}}
+     * )
+     */
     // jwt , session created 
     public function login(LoginUserRequest $request)
     {

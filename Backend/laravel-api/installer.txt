@@ -62,7 +62,8 @@ arn:aws:iam::216989106147:root
  mysql> ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'Sur@1256';
 Query OK, 0 rows affected (0.01 sec)
 
-
+to git clone on aws 
+sudo git clone https://2003parvshah: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@github.com/2003parvshah/AI-Powered_Healthcare_Diagnosis.git
 
 
 
@@ -80,3 +81,23 @@ php artisan db:seed --class=DoctorTimeTableSeeder
 php artisan db:seed --class=Health_issueSeeder
 php artisan db:seed --class=AppointmentsTableSeeder
 php artisan db:seed --class=DoctorAvailabilitySeeder
+
+
+
+
+cd /var/www/html/AI-Powered_Healthcare_Diagnosis/AI/"Symptoms Analyzer"
+source ../venv/bin/activate
+uvicorn app:app --host 0.0.0.0 --port 8002 --reload 
+ // druvpal
+
+
+cd /var/www/html/AI-Powered_Healthcare_Diagnosis/AI/'MRI and XRAY classifier'
+source ../venv/bin/activate
+uvicorn brain_lung_classifier:app --host 0.0.0.0 --port 8001 --reload
+// vivek
+
+
+
+source venv/bin/activate
+ uvicorn medical_disease_api:app --host 0.0.0.0 --port 8002 --reload
+
